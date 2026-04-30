@@ -1,0 +1,33 @@
+{
+  "name": "csci5105-k8s-example",
+  "image": "python:3.12",
+  "runArgs": ["--add-host=host.docker.internal:host-gateway"],
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "postCreateCommand": "python -m pip install --root-user-action=ignore -r requirements.txt",
+  
+  "remoteEnv": {
+    "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "DrBlury.protobuf-vsc",
+        "bierner.markdown-mermaid",
+        "jeff-hykin.better-dockerfile-syntax"
+      ]
+    }
+  },
+  "containerEnv": {
+    "PYTHONPATH": "$PYTHONPATH:${containerWorkspaceFolder}:${containerWorkspaceFolder}/proto/src",
+    "TARGET" : "host.docker.internal:50051"
+  }
+}
