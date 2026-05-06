@@ -34,28 +34,72 @@ class FrontendServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Put = channel.unary_unary(
-                '/kv.FrontendService/Put',
-                request_serializer=kv__pb2.PutRequest.SerializeToString,
-                response_deserializer=kv__pb2.PutResponse.FromString,
+        self.CreateItem = channel.unary_unary(
+                '/kv.FrontendService/CreateItem',
+                request_serializer=kv__pb2.CreateItemRequest.SerializeToString,
+                response_deserializer=kv__pb2.CreateItemResponse.FromString,
                 _registered_method=True)
-        self.Get = channel.unary_unary(
-                '/kv.FrontendService/Get',
-                request_serializer=kv__pb2.GetRequest.SerializeToString,
-                response_deserializer=kv__pb2.GetResponse.FromString,
+        self.GetItem = channel.unary_unary(
+                '/kv.FrontendService/GetItem',
+                request_serializer=kv__pb2.GetItemRequest.SerializeToString,
+                response_deserializer=kv__pb2.GetItemResponse.FromString,
+                _registered_method=True)
+        self.SearchItems = channel.unary_unary(
+                '/kv.FrontendService/SearchItems',
+                request_serializer=kv__pb2.SearchItemsRequest.SerializeToString,
+                response_deserializer=kv__pb2.SearchItemsResponse.FromString,
+                _registered_method=True)
+        self.UpdateItem = channel.unary_unary(
+                '/kv.FrontendService/UpdateItem',
+                request_serializer=kv__pb2.UpdateItemRequest.SerializeToString,
+                response_deserializer=kv__pb2.UpdateItemResponse.FromString,
+                _registered_method=True)
+        self.PlaceBid = channel.unary_unary(
+                '/kv.FrontendService/PlaceBid',
+                request_serializer=kv__pb2.PlaceBidRequest.SerializeToString,
+                response_deserializer=kv__pb2.PlaceBidResponse.FromString,
+                _registered_method=True)
+        self.JoinAuction = channel.unary_stream(
+                '/kv.FrontendService/JoinAuction',
+                request_serializer=kv__pb2.JoinAuctionRequest.SerializeToString,
+                response_deserializer=kv__pb2.AuctionUpdate.FromString,
                 _registered_method=True)
 
 
 class FrontendServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def Put(self, request, context):
+    def CreateItem(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Get(self, request, context):
+    def GetItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SearchItems(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def PlaceBid(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def JoinAuction(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -64,15 +108,35 @@ class FrontendServiceServicer(object):
 
 def add_FrontendServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Put': grpc.unary_unary_rpc_method_handler(
-                    servicer.Put,
-                    request_deserializer=kv__pb2.PutRequest.FromString,
-                    response_serializer=kv__pb2.PutResponse.SerializeToString,
+            'CreateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateItem,
+                    request_deserializer=kv__pb2.CreateItemRequest.FromString,
+                    response_serializer=kv__pb2.CreateItemResponse.SerializeToString,
             ),
-            'Get': grpc.unary_unary_rpc_method_handler(
-                    servicer.Get,
-                    request_deserializer=kv__pb2.GetRequest.FromString,
-                    response_serializer=kv__pb2.GetResponse.SerializeToString,
+            'GetItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetItem,
+                    request_deserializer=kv__pb2.GetItemRequest.FromString,
+                    response_serializer=kv__pb2.GetItemResponse.SerializeToString,
+            ),
+            'SearchItems': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchItems,
+                    request_deserializer=kv__pb2.SearchItemsRequest.FromString,
+                    response_serializer=kv__pb2.SearchItemsResponse.SerializeToString,
+            ),
+            'UpdateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateItem,
+                    request_deserializer=kv__pb2.UpdateItemRequest.FromString,
+                    response_serializer=kv__pb2.UpdateItemResponse.SerializeToString,
+            ),
+            'PlaceBid': grpc.unary_unary_rpc_method_handler(
+                    servicer.PlaceBid,
+                    request_deserializer=kv__pb2.PlaceBidRequest.FromString,
+                    response_serializer=kv__pb2.PlaceBidResponse.SerializeToString,
+            ),
+            'JoinAuction': grpc.unary_stream_rpc_method_handler(
+                    servicer.JoinAuction,
+                    request_deserializer=kv__pb2.JoinAuctionRequest.FromString,
+                    response_serializer=kv__pb2.AuctionUpdate.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -86,7 +150,7 @@ class FrontendService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Put(request,
+    def CreateItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -99,9 +163,9 @@ class FrontendService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/kv.FrontendService/Put',
-            kv__pb2.PutRequest.SerializeToString,
-            kv__pb2.PutResponse.FromString,
+            '/kv.FrontendService/CreateItem',
+            kv__pb2.CreateItemRequest.SerializeToString,
+            kv__pb2.CreateItemResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -113,7 +177,7 @@ class FrontendService(object):
             _registered_method=True)
 
     @staticmethod
-    def Get(request,
+    def GetItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -126,9 +190,117 @@ class FrontendService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/kv.FrontendService/Get',
-            kv__pb2.GetRequest.SerializeToString,
-            kv__pb2.GetResponse.FromString,
+            '/kv.FrontendService/GetItem',
+            kv__pb2.GetItemRequest.SerializeToString,
+            kv__pb2.GetItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SearchItems(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/kv.FrontendService/SearchItems',
+            kv__pb2.SearchItemsRequest.SerializeToString,
+            kv__pb2.SearchItemsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/kv.FrontendService/UpdateItem',
+            kv__pb2.UpdateItemRequest.SerializeToString,
+            kv__pb2.UpdateItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def PlaceBid(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/kv.FrontendService/PlaceBid',
+            kv__pb2.PlaceBidRequest.SerializeToString,
+            kv__pb2.PlaceBidResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def JoinAuction(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/kv.FrontendService/JoinAuction',
+            kv__pb2.JoinAuctionRequest.SerializeToString,
+            kv__pb2.AuctionUpdate.FromString,
             options,
             channel_credentials,
             insecure,
@@ -151,13 +323,18 @@ class StorageServiceStub(object):
         """
         self.Put = channel.unary_unary(
                 '/kv.StorageService/Put',
-                request_serializer=kv__pb2.PutRequest.SerializeToString,
-                response_deserializer=kv__pb2.PutResponse.FromString,
+                request_serializer=kv__pb2.Item.SerializeToString,
+                response_deserializer=kv__pb2.CreateItemResponse.FromString,
                 _registered_method=True)
         self.Get = channel.unary_unary(
                 '/kv.StorageService/Get',
-                request_serializer=kv__pb2.GetRequest.SerializeToString,
-                response_deserializer=kv__pb2.GetResponse.FromString,
+                request_serializer=kv__pb2.GetItemRequest.SerializeToString,
+                response_deserializer=kv__pb2.GetItemResponse.FromString,
+                _registered_method=True)
+        self.Update = channel.unary_unary(
+                '/kv.StorageService/Update',
+                request_serializer=kv__pb2.UpdateItemRequest.SerializeToString,
+                response_deserializer=kv__pb2.UpdateItemResponse.FromString,
                 _registered_method=True)
 
 
@@ -176,18 +353,29 @@ class StorageServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Update(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_StorageServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Put': grpc.unary_unary_rpc_method_handler(
                     servicer.Put,
-                    request_deserializer=kv__pb2.PutRequest.FromString,
-                    response_serializer=kv__pb2.PutResponse.SerializeToString,
+                    request_deserializer=kv__pb2.Item.FromString,
+                    response_serializer=kv__pb2.CreateItemResponse.SerializeToString,
             ),
             'Get': grpc.unary_unary_rpc_method_handler(
                     servicer.Get,
-                    request_deserializer=kv__pb2.GetRequest.FromString,
-                    response_serializer=kv__pb2.GetResponse.SerializeToString,
+                    request_deserializer=kv__pb2.GetItemRequest.FromString,
+                    response_serializer=kv__pb2.GetItemResponse.SerializeToString,
+            ),
+            'Update': grpc.unary_unary_rpc_method_handler(
+                    servicer.Update,
+                    request_deserializer=kv__pb2.UpdateItemRequest.FromString,
+                    response_serializer=kv__pb2.UpdateItemResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -215,8 +403,8 @@ class StorageService(object):
             request,
             target,
             '/kv.StorageService/Put',
-            kv__pb2.PutRequest.SerializeToString,
-            kv__pb2.PutResponse.FromString,
+            kv__pb2.Item.SerializeToString,
+            kv__pb2.CreateItemResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -242,8 +430,35 @@ class StorageService(object):
             request,
             target,
             '/kv.StorageService/Get',
-            kv__pb2.GetRequest.SerializeToString,
-            kv__pb2.GetResponse.FromString,
+            kv__pb2.GetItemRequest.SerializeToString,
+            kv__pb2.GetItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Update(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/kv.StorageService/Update',
+            kv__pb2.UpdateItemRequest.SerializeToString,
+            kv__pb2.UpdateItemResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -1,5 +1,6 @@
 import os
 from concurrent import futures
+import uuid
 
 import grpc
 
@@ -13,15 +14,25 @@ DATA = {}
 
 class Storage(kv_pb2_grpc.StorageServiceServicer):
     def Put(self, request, context):
-        DATA[request.key] = request.value
-        print(f"{POD_NAME} PUT {request.key}={request.value}", flush=True)
-        return kv_pb2.PutResponse(ok=True, pod=POD_NAME)
+        item_id = str(uuid.uuid4())
+        request.item_id = item_id
+        DATA[item_id] = request
+        print(f"{POD_NAME} PUT item {item_id}", flush=True)
+        return kv_pb2.CreateItemResponse(ok=True, item_id=item_id, pod=POD_NAME)
 
     def Get(self, request, context):
-        value = DATA.get(request.key, "")
-        found = request.key in DATA
-        print(f"{POD_NAME} GET {request.key} found={found}", flush=True)
-        return kv_pb2.GetResponse(found=found, value=value, pod=POD_NAME)
+        item = DATA.get(request.item_id)
+        found = item is not None
+        print(f"{POD_NAME} GET {request.item_id} found={found}", flush=True)
+        return kv_pb2.GetItemResponse(found=found, item=item, pod=POD_NAME)
+
+    def Update(self, request, context):
+        if request.item_id in DATA:
+            DATA[request.item_id] = request.item
+            print(f"{POD_NAME} UPDATE {request.item_id}", flush=True)
+            return kv_pb2.UpdateItemResponse(ok=True, new_version=request.item.version, pod=POD_NAME)
+        else:
+            return kv_pb2.UpdateItemResponse(ok=False, new_version=0, pod=POD_NAME)
 
 
 def serve():
