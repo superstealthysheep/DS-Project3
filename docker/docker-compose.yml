@@ -20,6 +20,17 @@ x-all-nodes-shared-config: &shared-config
 x-service-nodes-shared-config: &service-config
   command: ["python", "-u", "service-node/service-node.py"]
 
+x-replica-nodes-config: &replica-config
+  networks:
+    - project3-net
+  working_dir: /app
+  image: project3_image:latest # just label for the container; doesn't exist in any registry
+  pull_policy: never # thus don't pull
+
+  build:
+    context: ..
+    dockerfile: replica-node/Dockerfile
+
 services:
   controller:
     <<: *shared-config # copy in contents of the shared config
@@ -43,6 +54,11 @@ services:
     <<: [*shared-config, *service-config]
     container_name: p3-service-node-2
     hostname: service-node-2
+
+  replica-node-0:
+    <<: *replica-config
+    container_name: p3-replica-node-0
+    hostname: p3-replica-node-0
 
 networks:
   project3-net:
