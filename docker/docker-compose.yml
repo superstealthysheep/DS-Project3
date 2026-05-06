@@ -63,7 +63,7 @@ services:
   replica-node-0:
     <<: *replica-config
     container_name: p3-replica-node-0
-    hostname: p3-replica-node-0
+    hostname: replica-node-0
     environment:
       PORT: 50250
 

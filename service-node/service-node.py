@@ -11,7 +11,7 @@ PORT = os.environ.get("PORT", "50051")
 DATA = {}
 
 
-class ServiceNode(p3_grpc.ReplicaNodeServiceServicer):
+class ServiceNode(p3_grpc.ServiceNodeServiceServicer):
     def S_CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
         return p3.CreateItemResponse(
             success=False,
@@ -30,7 +30,7 @@ def serve():
     p3_grpc.add_ServiceNodeServiceServicer_to_server(ServiceNode(), server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
-    print(f"storage {HOSTNAME} listening on {PORT}", flush=True)
+    print(f"Service node '{HOSTNAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
 

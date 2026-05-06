@@ -31,7 +31,7 @@ def serve():
     p3_grpc.add_ReplicaNodeServiceServicer_to_server(ReplicaNode(), server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
-    print(f"storage {HOSTNAME} listening on {PORT}", flush=True)
+    print(f"storage '{HOSTNAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
 
