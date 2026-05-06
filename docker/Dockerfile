@@ -12,5 +12,6 @@ COPY ./proto /app/proto
 COPY ./controller ./app/controller
 COPY ./service-node ./app/service-node
 COPY ./docker ./app/docker
+ENV PYTHONPATH=$PYTHONPATH:/app/proto/src
 
 WORKDIR /app
