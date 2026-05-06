@@ -25,21 +25,37 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eproject3.proto\x12\x08project3\x1a\x1bgoogle/protobuf/empty.proto\"\xd8\x01\n\x04Item\x12\x0f\n\x07item_id\x18\x01 \x01(\t\x12\x11\n\tseller_id\x18\x02 \x01(\t\x12\r\n\x05title\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x16\n\x0estarting_price\x18\x06 \x01(\x05\x12\x15\n\rcurrent_price\x18\x07 \x01(\x05\x12\x10\n\x08quantity\x18\x08 \x01(\x05\x12$\n\x06status\x18\t \x01(\x0e\x32\x14.project3.ItemStatus\x12\x0f\n\x07version\x18\n \x01(\t*=\n\nItemStatus\x12\x14\n\x10ITEM_STATUS_SOLD\x10\x00\x12\x19\n\x15ITEM_STATUS_AVAILABLE\x10\x01\x32\x84\x03\n\x11\x43ontrollerService\x12<\n\nCreateItem\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12\x39\n\x07GetItem\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12=\n\x0bSearchItems\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12<\n\nUpdateItem\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12=\n\x0bJoinAuction\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12:\n\x08PlaceBid\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty2\x14\n\x12ServiceNodeService2\x14\n\x12StorageNodeServiceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eproject3.proto\x12\x08project3\x1a\x1bgoogle/protobuf/empty.proto\"\xd8\x01\n\x04Item\x12\x0f\n\x07item_id\x18\x01 \x01(\t\x12\x11\n\tseller_id\x18\x02 \x01(\t\x12\r\n\x05title\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x16\n\x0estarting_price\x18\x06 \x01(\x05\x12\x15\n\rcurrent_price\x18\x07 \x01(\x05\x12\x10\n\x08quantity\x18\x08 \x01(\x05\x12$\n\x06status\x18\t \x01(\x0e\x32\x14.project3.ItemStatus\x12\x0f\n\x07version\x18\n \x01(\t\"!\n\x0eGetItemRequest\x12\x0f\n\x07item_id\x18\x01 \x01(\t\"@\n\x0fGetItemResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x1c\n\x04item\x18\x02 \x01(\x0b\x32\x0e.project3.Item\"1\n\x11\x43reateItemRequest\x12\x1c\n\x04item\x18\x01 \x01(\x0b\x32\x0e.project3.Item\"C\n\x12\x43reateItemResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x1c\n\x04item\x18\x02 \x01(\x0b\x32\x0e.project3.Item\"`\n\x11UpdateItemRequest\x12\x0f\n\x07item_id\x18\x01 \x01(\t\x12\x17\n\x0f\x63urrent_version\x18\x02 \x01(\t\x12!\n\tnew_value\x18\x03 \x01(\x0b\x32\x0e.project3.Item\"C\n\x12UpdateItemResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x1c\n\x04item\x18\x02 \x01(\x0b\x32\x0e.project3.Item\"\x1c\n\tHeartbeat\x12\x0f\n\x07node_id\x18\x01 \x01(\t\"\x12\n\x10HeartbeatRequest*=\n\nItemStatus\x12\x14\n\x10ITEM_STATUS_SOLD\x10\x00\x12\x19\n\x15ITEM_STATUS_AVAILABLE\x10\x01\x32\xa0\x01\n\x11\x43ontrollerService\x12I\n\x0c\x43_CreateItem\x12\x1b.project3.CreateItemRequest\x1a\x1c.project3.CreateItemResponse\x12@\n\tC_GetItem\x12\x18.project3.GetItemRequest\x1a\x19.project3.GetItemResponse2\xa1\x01\n\x12ServiceNodeService\x12I\n\x0cS_CreateItem\x12\x1b.project3.CreateItemRequest\x1a\x1c.project3.CreateItemResponse\x12@\n\tS_GetItem\x12\x18.project3.GetItemRequest\x1a\x19.project3.GetItemResponse2\xcc\x01\n\x12ReplicaNodeService\x12I\n\x0cR_CreateItem\x12\x1b.project3.CreateItemRequest\x1a\x1c.project3.CreateItemResponse\x12\x38\n\x06R_Read\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12\x31\n\x07R_Write\x12\x16.google.protobuf.Empty\x1a\x0e.project3.Itemb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'project3_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_ITEMSTATUS']._serialized_start=276
-  _globals['_ITEMSTATUS']._serialized_end=337
+  _globals['_ITEMSTATUS']._serialized_start=714
+  _globals['_ITEMSTATUS']._serialized_end=775
   _globals['_ITEM']._serialized_start=58
   _globals['_ITEM']._serialized_end=274
-  _globals['_CONTROLLERSERVICE']._serialized_start=340
-  _globals['_CONTROLLERSERVICE']._serialized_end=728
-  _globals['_SERVICENODESERVICE']._serialized_start=730
-  _globals['_SERVICENODESERVICE']._serialized_end=750
-  _globals['_STORAGENODESERVICE']._serialized_start=752
-  _globals['_STORAGENODESERVICE']._serialized_end=772
+  _globals['_GETITEMREQUEST']._serialized_start=276
+  _globals['_GETITEMREQUEST']._serialized_end=309
+  _globals['_GETITEMRESPONSE']._serialized_start=311
+  _globals['_GETITEMRESPONSE']._serialized_end=375
+  _globals['_CREATEITEMREQUEST']._serialized_start=377
+  _globals['_CREATEITEMREQUEST']._serialized_end=426
+  _globals['_CREATEITEMRESPONSE']._serialized_start=428
+  _globals['_CREATEITEMRESPONSE']._serialized_end=495
+  _globals['_UPDATEITEMREQUEST']._serialized_start=497
+  _globals['_UPDATEITEMREQUEST']._serialized_end=593
+  _globals['_UPDATEITEMRESPONSE']._serialized_start=595
+  _globals['_UPDATEITEMRESPONSE']._serialized_end=662
+  _globals['_HEARTBEAT']._serialized_start=664
+  _globals['_HEARTBEAT']._serialized_end=692
+  _globals['_HEARTBEATREQUEST']._serialized_start=694
+  _globals['_HEARTBEATREQUEST']._serialized_end=712
+  _globals['_CONTROLLERSERVICE']._serialized_start=778
+  _globals['_CONTROLLERSERVICE']._serialized_end=938
+  _globals['_SERVICENODESERVICE']._serialized_start=941
+  _globals['_SERVICENODESERVICE']._serialized_end=1102
+  _globals['_REPLICANODESERVICE']._serialized_start=1105
+  _globals['_REPLICANODESERVICE']._serialized_end=1309
 # @@protoc_insertion_point(module_scope)

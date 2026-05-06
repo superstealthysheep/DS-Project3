@@ -4,6 +4,7 @@ import grpc
 import warnings
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+import project3_pb2 as project3__pb2
 
 GRPC_GENERATED_VERSION = '1.80.0'
 GRPC_VERSION = grpc.__version__
@@ -34,73 +35,36 @@ class ControllerServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CreateItem = channel.unary_unary(
-                '/project3.ControllerService/CreateItem',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        self.C_CreateItem = channel.unary_unary(
+                '/project3.ControllerService/C_CreateItem',
+                request_serializer=project3__pb2.CreateItemRequest.SerializeToString,
+                response_deserializer=project3__pb2.CreateItemResponse.FromString,
                 _registered_method=True)
-        self.GetItem = channel.unary_unary(
-                '/project3.ControllerService/GetItem',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
-        self.SearchItems = channel.unary_unary(
-                '/project3.ControllerService/SearchItems',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
-        self.UpdateItem = channel.unary_unary(
-                '/project3.ControllerService/UpdateItem',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
-        self.JoinAuction = channel.unary_unary(
-                '/project3.ControllerService/JoinAuction',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
-        self.PlaceBid = channel.unary_unary(
-                '/project3.ControllerService/PlaceBid',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        self.C_GetItem = channel.unary_unary(
+                '/project3.ControllerService/C_GetItem',
+                request_serializer=project3__pb2.GetItemRequest.SerializeToString,
+                response_deserializer=project3__pb2.GetItemResponse.FromString,
                 _registered_method=True)
 
 
 class ControllerServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CreateItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def C_CreateItem(self, request, context):
+        """TODO: populate messages
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def SearchItems(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def UpdateItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def JoinAuction(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def PlaceBid(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def C_GetItem(self, request, context):
+        """rpc C_SearchItems(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc C_UpdateItem(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc C_JoinAuction(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc C_PlaceBid(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -108,35 +72,15 @@ class ControllerServiceServicer(object):
 
 def add_ControllerServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CreateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateItem,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            'C_CreateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.C_CreateItem,
+                    request_deserializer=project3__pb2.CreateItemRequest.FromString,
+                    response_serializer=project3__pb2.CreateItemResponse.SerializeToString,
             ),
-            'GetItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetItem,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'SearchItems': grpc.unary_unary_rpc_method_handler(
-                    servicer.SearchItems,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'UpdateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateItem,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'JoinAuction': grpc.unary_unary_rpc_method_handler(
-                    servicer.JoinAuction,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'PlaceBid': grpc.unary_unary_rpc_method_handler(
-                    servicer.PlaceBid,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            'C_GetItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.C_GetItem,
+                    request_deserializer=project3__pb2.GetItemRequest.FromString,
+                    response_serializer=project3__pb2.GetItemResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -150,7 +94,7 @@ class ControllerService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CreateItem(request,
+    def C_CreateItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -163,9 +107,9 @@ class ControllerService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ControllerService/CreateItem',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            '/project3.ControllerService/C_CreateItem',
+            project3__pb2.CreateItemRequest.SerializeToString,
+            project3__pb2.CreateItemResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -177,7 +121,7 @@ class ControllerService(object):
             _registered_method=True)
 
     @staticmethod
-    def GetItem(request,
+    def C_GetItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -190,117 +134,9 @@ class ControllerService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ControllerService/GetItem',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def SearchItems(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/SearchItems',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def UpdateItem(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/UpdateItem',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def JoinAuction(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/JoinAuction',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def PlaceBid(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/PlaceBid',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            '/project3.ControllerService/C_GetItem',
+            project3__pb2.GetItemRequest.SerializeToString,
+            project3__pb2.GetItemResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -321,14 +157,53 @@ class ServiceNodeServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.S_CreateItem = channel.unary_unary(
+                '/project3.ServiceNodeService/S_CreateItem',
+                request_serializer=project3__pb2.CreateItemRequest.SerializeToString,
+                response_deserializer=project3__pb2.CreateItemResponse.FromString,
+                _registered_method=True)
+        self.S_GetItem = channel.unary_unary(
+                '/project3.ServiceNodeService/S_GetItem',
+                request_serializer=project3__pb2.GetItemRequest.SerializeToString,
+                response_deserializer=project3__pb2.GetItemResponse.FromString,
+                _registered_method=True)
 
 
 class ServiceNodeServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
+    def S_CreateItem(self, request, context):
+        """TODO: populate
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def S_GetItem(self, request, context):
+        """rpc S_SearchItems(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc S_UpdateItem(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc S_JoinAuction(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc S_PlaceBid(google.protobuf.Empty) returns (google.protobuf.Empty);
+        rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+        rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ServiceNodeServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'S_CreateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.S_CreateItem,
+                    request_deserializer=project3__pb2.CreateItemRequest.FromString,
+                    response_serializer=project3__pb2.CreateItemResponse.SerializeToString,
+            ),
+            'S_GetItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.S_GetItem,
+                    request_deserializer=project3__pb2.GetItemRequest.FromString,
+                    response_serializer=project3__pb2.GetItemResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'project3.ServiceNodeService', rpc_method_handlers)
@@ -340,8 +215,62 @@ def add_ServiceNodeServiceServicer_to_server(servicer, server):
 class ServiceNodeService(object):
     """Missing associated documentation comment in .proto file."""
 
+    @staticmethod
+    def S_CreateItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/project3.ServiceNodeService/S_CreateItem',
+            project3__pb2.CreateItemRequest.SerializeToString,
+            project3__pb2.CreateItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
-class StorageNodeServiceStub(object):
+    @staticmethod
+    def S_GetItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/project3.ServiceNodeService/S_GetItem',
+            project3__pb2.GetItemRequest.SerializeToString,
+            project3__pb2.GetItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class ReplicaNodeServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -350,21 +279,151 @@ class StorageNodeServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.R_CreateItem = channel.unary_unary(
+                '/project3.ReplicaNodeService/R_CreateItem',
+                request_serializer=project3__pb2.CreateItemRequest.SerializeToString,
+                response_deserializer=project3__pb2.CreateItemResponse.FromString,
+                _registered_method=True)
+        self.R_Read = channel.unary_unary(
+                '/project3.ReplicaNodeService/R_Read',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.R_Write = channel.unary_unary(
+                '/project3.ReplicaNodeService/R_Write',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=project3__pb2.Item.FromString,
+                _registered_method=True)
 
 
-class StorageNodeServiceServicer(object):
+class ReplicaNodeServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
+    def R_CreateItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
-def add_StorageNodeServiceServicer_to_server(servicer, server):
+    def R_Read(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def R_Write(self, request, context):
+        """rpc R_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_ReplicaNodeServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'R_CreateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.R_CreateItem,
+                    request_deserializer=project3__pb2.CreateItemRequest.FromString,
+                    response_serializer=project3__pb2.CreateItemResponse.SerializeToString,
+            ),
+            'R_Read': grpc.unary_unary_rpc_method_handler(
+                    servicer.R_Read,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'R_Write': grpc.unary_unary_rpc_method_handler(
+                    servicer.R_Write,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=project3__pb2.Item.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'project3.StorageNodeService', rpc_method_handlers)
+            'project3.ReplicaNodeService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('project3.StorageNodeService', rpc_method_handlers)
+    server.add_registered_method_handlers('project3.ReplicaNodeService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class StorageNodeService(object):
+class ReplicaNodeService(object):
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def R_CreateItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/project3.ReplicaNodeService/R_CreateItem',
+            project3__pb2.CreateItemRequest.SerializeToString,
+            project3__pb2.CreateItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def R_Read(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/project3.ReplicaNodeService/R_Read',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def R_Write(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/project3.ReplicaNodeService/R_Write',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            project3__pb2.Item.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

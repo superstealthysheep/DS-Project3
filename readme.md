@@ -6,6 +6,7 @@
 ```bash
 you@devcontainer $ make proto
 ```
+NOTE: you will need to run this in the devcontainer whenever you make updates to the protofile
 
 3. 
 ```bash
@@ -20,9 +21,12 @@ you@host_machine $ make up
 - Host machine
 - Devcontainer
     - `.devcontainer/devcontainer.json`
-- Nodes (controller, service, storage)
+- Nodes (controller, service)
     - `docker/docker-compose.yml`
     - `docker/Dockerfile`
+- Replica/storage nodes:
+    - `docker/docker-compose.yml`
+    - `replica-node/Dockerfile`
 
 ### Areas of minor interest:
 - `.uv_cache` is used project-wide to cache libraries (for devcontainer, for nodes)
