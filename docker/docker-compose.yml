@@ -1,0 +1,28 @@
+name: project3-compose
+
+services:
+  controller:
+    container_name: controller
+    hostname: controller
+    # volumes:
+    #   - type: bind
+    #     source: ./.uv_cache # TODO?: point to host system's global uv cache?
+    #     target: /root/.cache/uv
+    # environment:
+    #   - UV_CACHE_DIR=/root/.cache/uv
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    networks:
+      - project3_net
+    working_dir: /app
+
+    image: project3-image:latest # just label for the container; doesn't exist in any registry
+    pull_policy: never # thus don't pull
+
+  # service-node:
+  # storage-node:
+
+networks:
+  project3_net:
+    name: project3_net

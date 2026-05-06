@@ -1,6 +1,5 @@
 {
-  "name": "csci5103-project3",
-  // "image": "ghcr.io/astral-sh/uv:debian-slim",
+  "name": "csci5105-project3",
   "image": "python:3.12-slim",
   "runArgs": ["--add-host=host.docker.internal:host-gateway"],
   "features": {
@@ -8,8 +7,7 @@
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers-extra/features/uv:1": {},
   },
-  // "postCreateCommand": "pip install uv && export UV_PROJECT_ENVIRONMENT=/usr/local && uv python pin --global 3.12 && uv pip install --system -r requirements.txt",
-  "postCreateCommand": "uv python pin --global 3.12 && uv pip install --system -r requirements.txt",
+  "postCreateCommand": "export UV_CACHE_DIR=./.uv_cache && uv python pin --global 3.12 && uv pip install --system -r requirements.txt",
   
   "remoteEnv": {
     "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
