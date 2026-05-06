@@ -7,7 +7,7 @@
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers-extra/features/uv:1": {},
   },
-  "postCreateCommand": "export UV_CACHE_DIR=./.uv_cache && uv python pin --global 3.12 && uv pip install --system -r requirements.txt",
+  "postCreateCommand": "apt update && apt install make && export UV_CACHE_DIR=./.uv_cache && uv python pin --global 3.12 && uv pip install --system -r requirements.txt",
   
   "remoteEnv": {
     "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"

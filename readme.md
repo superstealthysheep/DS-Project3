@@ -1,14 +1,19 @@
 ## Project setup
 
-1. Vscode devcontainer extension should auto-build devcontainer
+1. Vscode devcontainer extension should auto-build devcontainer for you
 
 2. 
 ```bash
-# (if necessary, `docker rm` old containers:)
-make purge-containers
+you@devcontainer $ make proto
+```
 
-cd docker
-docker compose up --build
+3. 
+```bash
+# (if necessary, `docker rm` old containers:)
+you@host_machine $ make purge-containers
+
+# (`docker compose up`)
+you@host_machine $ make up
 ```
 
 ## Containers and their configs:
