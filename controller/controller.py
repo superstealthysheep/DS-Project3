@@ -3,7 +3,11 @@ import subprocess
 import time
 
 import grpc
+import project3_pb2 as p3
+import project3_pb2_grpc as p3_grpc
 
+import os
+from concurrent import futures
 
 def run_cmd(cmd, check=True, verbose=True):
     if verbose: print(" ".join(cmd))
@@ -97,28 +101,53 @@ def running_storage_replicas():
     return sorted(names)
 
 
-def main():
-    # print("dummy controller")
-    parser = argparse.ArgumentParser(description="Simple storage replica controller")
-    parser.add_argument("--image", default="storage:latest")
-    parser.add_argument("--network", default="project3-net")
-    parser.add_argument("--port", type=int, default=50052)
-    parser.add_argument("--replicas", type=int, default=2)
-    parser.add_argument(
-        "--host-port-base",
-        type=int,
-        default=60052,
-        help="Host port for storage-0 (storage-i uses base+i)",
-    )
-    parser.add_argument("--interval", type=int, default=5)
-    parser.add_argument("--timeout", type=int, default=2)
-    args = parser.parse_args()
+HOSTNAME = os.environ.get("HOSTNAME", "controller-node")
+PORT = os.environ.get("PORT", "50050")
+DATA = {}
+
+class Controller(p3_grpc.ControllerServiceServicer):
+    def C_CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
+        return p3.CreateItemResponse(
+            success=False,
+            item=None,
+        )
+
+    def C_GetItem(self, request: p3.GetItemRequest, context: grpc.ServicerContext) -> p3.GetItemResponse:
+        return p3.GetItemResponse(
+            success=False,
+            item=None,
+        )
+
+def serve():
+    print("dummy controller")
+
+    # parser = argparse.ArgumentParser(description="Simple storage replica controller")
+    # parser.add_argument("--image", default="storage:latest")
+    # parser.add_argument("--network", default="project3-net")
+    # parser.add_argument("--port", type=int, default=50052)
+    # parser.add_argument("--replicas", type=int, default=2)
+    # parser.add_argument(
+    #     "--host-port-base",
+    #     type=int,
+    #     default=60052,
+    #     help="Host port for storage-0 (storage-i uses base+i)",
+    # )
+    # parser.add_argument("--interval", type=int, default=5)
+    # parser.add_argument("--timeout", type=int, default=2)
+    # args = parser.parse_args()
 
     import docker
     docker_client = docker.from_env()
     print(docker_client)
     print(docker_client.containers.list())
-    print(docker_client.containers.get("controller"))
+    print(docker_client.containers.get("p3-controller"))
+
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    p3_grpc.add_ControllerServiceServicer_to_server(Controller(), server)
+    server.add_insecure_port(f"[::]:{PORT}")
+    server.start()
+    print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
+    server.wait_for_termination()
 
     # ensure_network(args.network)
 
@@ -149,4 +178,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    serve()
