@@ -5,8 +5,13 @@ import time
 import grpc
 
 
-def run_cmd(cmd, check=True):
-    return subprocess.run(cmd, capture_output=True, text=True, check=check)
+def run_cmd(cmd, check=True, verbose=True):
+    if verbose: print(" ".join(cmd))
+    res = subprocess.run(cmd, capture_output=True, text=True, check=check)
+    if verbose:
+        print(res.stderr)
+        print(res.stdout)
+    return res
 
 
 def replica_name(i):
@@ -93,47 +98,48 @@ def running_storage_replicas():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Simple storage replica controller")
-    parser.add_argument("--image", default="storage:latest")
-    parser.add_argument("--network", default="kv-net")
-    parser.add_argument("--port", type=int, default=50052)
-    parser.add_argument("--replicas", type=int, default=2)
-    parser.add_argument(
-        "--host-port-base",
-        type=int,
-        default=60052,
-        help="Host port for storage-0 (storage-i uses base+i)",
-    )
-    parser.add_argument("--interval", type=int, default=5)
-    parser.add_argument("--timeout", type=int, default=2)
-    args = parser.parse_args()
+    print("dummy controller")
+    # parser = argparse.ArgumentParser(description="Simple storage replica controller")
+    # parser.add_argument("--image", default="storage:latest")
+    # parser.add_argument("--network", default="kv-net")
+    # parser.add_argument("--port", type=int, default=50052)
+    # parser.add_argument("--replicas", type=int, default=2)
+    # parser.add_argument(
+    #     "--host-port-base",
+    #     type=int,
+    #     default=60052,
+    #     help="Host port for storage-0 (storage-i uses base+i)",
+    # )
+    # parser.add_argument("--interval", type=int, default=5)
+    # parser.add_argument("--timeout", type=int, default=2)
+    # args = parser.parse_args()
 
-    ensure_network(args.network)
+    # ensure_network(args.network)
 
-    for i in range(args.replicas):
-        name = replica_name(i)
-        host_port = args.host_port_base + i
-        if not container_running(name):
-            start_replica(name, args.image, args.network, args.port, host_port)
+    # for i in range(args.replicas):
+    #     name = replica_name(i)
+    #     host_port = args.host_port_base + i
+    #     if not container_running(name):
+    #         start_replica(name, args.image, args.network, args.port, host_port)
 
-    print("controller is running", flush=True)
+    # print("controller is running", flush=True)
 
-    while True:
-        for i in range(args.replicas):
-            name = replica_name(i)
-            host_port = args.host_port_base + i
+    # while True:
+    #     for i in range(args.replicas):
+    #         name = replica_name(i)
+    #         host_port = args.host_port_base + i
 
-            if not container_running(name):
-                print(f"{name} is down (container not running), restarting", flush=True)
-                start_replica(name, args.image, args.network, args.port, host_port)
-                continue
+    #         if not container_running(name):
+    #             print(f"{name} is down (container not running), restarting", flush=True)
+    #             start_replica(name, args.image, args.network, args.port, host_port)
+    #             continue
 
-            if not grpc_healthy(host_port, args.timeout):
-                print(f"{name} is down (grpc timeout), replacing", flush=True)
-                start_replica(name, args.image, args.network, args.port, host_port)
+    #         if not grpc_healthy(host_port, args.timeout):
+    #             print(f"{name} is down (grpc timeout), replacing", flush=True)
+    #             start_replica(name, args.image, args.network, args.port, host_port)
 
-        print(f"active replicas: {running_storage_replicas()}", flush=True)
-        time.sleep(args.interval)
+    #     print(f"active replicas: {running_storage_replicas()}", flush=True)
+    #     time.sleep(args.interval)
 
 
 if __name__ == "__main__":

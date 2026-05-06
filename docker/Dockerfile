@@ -8,6 +8,10 @@ RUN --mount=type=cache,target=/root/.cache/uv
 COPY requirements.txt .
 RUN uv pip install --system -r requirements.txt
 
+COPY ./controller ./app/controller
+COPY ./service-node ./app/service-node
+COPY ./docker ./app/docker
+
 WORKDIR /app
 
 # COPY requirements.txt .
