@@ -98,21 +98,27 @@ def running_storage_replicas():
 
 
 def main():
-    print("dummy controller")
-    # parser = argparse.ArgumentParser(description="Simple storage replica controller")
-    # parser.add_argument("--image", default="storage:latest")
-    # parser.add_argument("--network", default="kv-net")
-    # parser.add_argument("--port", type=int, default=50052)
-    # parser.add_argument("--replicas", type=int, default=2)
-    # parser.add_argument(
-    #     "--host-port-base",
-    #     type=int,
-    #     default=60052,
-    #     help="Host port for storage-0 (storage-i uses base+i)",
-    # )
-    # parser.add_argument("--interval", type=int, default=5)
-    # parser.add_argument("--timeout", type=int, default=2)
-    # args = parser.parse_args()
+    # print("dummy controller")
+    parser = argparse.ArgumentParser(description="Simple storage replica controller")
+    parser.add_argument("--image", default="storage:latest")
+    parser.add_argument("--network", default="project3-net")
+    parser.add_argument("--port", type=int, default=50052)
+    parser.add_argument("--replicas", type=int, default=2)
+    parser.add_argument(
+        "--host-port-base",
+        type=int,
+        default=60052,
+        help="Host port for storage-0 (storage-i uses base+i)",
+    )
+    parser.add_argument("--interval", type=int, default=5)
+    parser.add_argument("--timeout", type=int, default=2)
+    args = parser.parse_args()
+
+    import docker
+    docker_client = docker.from_env()
+    print(docker_client)
+    print(docker_client.containers.list())
+    print(docker_client.containers.get("controller"))
 
     # ensure_network(args.network)
 
