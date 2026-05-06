@@ -1,0 +1,117 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package project3;
+
+enum ItemStatus {
+  ITEM_STATUS_SOLD = 0;
+  ITEM_STATUS_AVAILABLE = 1;
+}
+
+message Item {
+  string item_id = 1;
+  string seller_id = 2;
+  string title = 3;
+  string category = 4;
+  string description = 5;
+  int32 starting_price = 6; // (price is in cents)
+  int32 current_price = 7; 
+  int32 quantity = 8;
+  ItemStatus status = 9;
+  string version = 10;
+}
+
+message GetItemRequest {
+  string item_id = 1;
+}
+message GetItemResponse {
+  bool success = 1;
+  Item item = 2;
+}
+message CreateItemRequest {
+  Item item = 1;
+}
+message CreateItemResponse {
+  bool success = 1;
+  Item item = 2;
+}
+
+message UpdateItemRequest {
+  string item_id = 1;
+  string current_version = 2;
+  Item new_value = 3;
+}
+message UpdateItemResponse {
+  bool success = 1;
+  Item item = 2;
+}
+
+// message Client {
+// }
+
+message Heartbeat { // sent from node to controller
+  string node_id = 1;
+}
+message HeartbeatRequest { // sent from controller to node if extra heartbeat desired
+}
+
+service ControllerService {
+  // TODO: populate messages
+  rpc C_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc C_GetItem(GetItemRequest) returns (GetItemResponse);
+  // rpc C_SearchItems(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc C_UpdateItem(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc C_JoinAuction(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc C_PlaceBid(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
+}
+
+service ServiceNodeService {
+  // TODO: populate
+  rpc S_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc S_GetItem(GetItemRequest) returns (GetItemResponse);
+  // rpc S_SearchItems(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc S_UpdateItem(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc S_JoinAuction(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc S_PlaceBid(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+  // rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node
+}
+
+service ReplicaNodeService {
+  rpc R_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc R_Read(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc R_Write(google.protobuf.Empty) returns (Item);
+  // rpc R_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+}
+
+// message PutRequest {
+//   string key = 1;
+//   string value = 2;
+// }
+
+// message PutResponse {
+//   bool ok = 1;
+//   string pod = 2;
+// }
+
+// message GetRequest {
+//   string key = 1;
+// }
+
+// message GetResponse {
+//   bool found = 1;
+//   string value = 2;
+//   string pod = 3;
+// }
+
+// service FrontendService {
+//   rpc Put(PutRequest) returns (PutResponse);
+//   rpc Get(GetRequest) returns (GetResponse);
+// }
+
+// service StorageService {
+//   rpc Put(PutRequest) returns (PutResponse);
+//   rpc Get(GetRequest) returns (GetResponse);
+// }
