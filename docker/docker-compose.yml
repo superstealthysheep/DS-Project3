@@ -12,7 +12,7 @@ x-all-nodes-shared-config: &shared-config
     context: ..
     dockerfile: docker/Dockerfile
   networks:
-    - project3_net
+    - project3-net
   working_dir: /app
   image: project3_image:latest # just label for the container; doesn't exist in any registry
   pull_policy: never # thus don't pull
@@ -45,5 +45,5 @@ services:
     hostname: service-node-2
 
 networks:
-  project3_net:
-    name: project3_net
+  project3-net:
+    name: project3-net
