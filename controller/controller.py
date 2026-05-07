@@ -130,6 +130,7 @@ class ControllerServicer(p3_grpc.ControllerServiceServicer):
 
 class FrontendServicer(p3_grpc.FrontendServiceServicer):
     global HOSTNAME
+    global CONTAINER_NAME
     global STORAGE_TARGET
     global auction_listeners
 
@@ -137,35 +138,35 @@ class FrontendServicer(p3_grpc.FrontendServiceServicer):
         with grpc.insecure_channel(STORAGE_TARGET) as channel:
             stub = p3_grpc.StorageServiceStub(channel)
             response = stub.Put(request.item)
-        print(f"'{HOSTNAME}' CreateItem {response.item_id}", flush=True)
+        print(f"'{CONTAINER_NAME}' CreateItem {response.item_id}", flush=True)
         return response
 
     def GetItem(self, request, context):
         with grpc.insecure_channel(STORAGE_TARGET) as channel:
             stub = p3_grpc.StorageServiceStub(channel)
             response = stub.Get(request)
-        print(f"'{HOSTNAME}' GetItem {request.item_id}", flush=True)
+        print(f"'{CONTAINER_NAME}' GetItem {request.item_id}", flush=True)
         return response
 
     def SearchItems(self, request, context):
         # For bare bones, just return all items, filter by keyword/category
         # But storage doesn't have search, so get all? Wait, storage only has Get by id.
         # For bare bones, assume we have a list or something. But to keep simple, return empty for now.
-        print(f"'{HOSTNAME}' SearchItems {request.keyword}", flush=True)
-        return p3.SearchItemsResponse(items=[], pod=HOSTNAME)
+        print(f"'{CONTAINER_NAME}' SearchItems {request.keyword}", flush=True)
+        return p3.SearchItemsResponse(items=[], pod=CONTAINER_NAME)
 
     def UpdateItem(self, request, context):
         with grpc.insecure_channel(STORAGE_TARGET) as channel:
             stub = p3_grpc.StorageServiceStub(channel)
             response = stub.Update(request)
-        print(f"'{HOSTNAME}' UpdateItem {request.item_id}", flush=True)
+        print(f"'{CONTAINER_NAME}' UpdateItem {request.item_id}", flush=True)
         return response
 
     def PlaceBid(self, request, context):
         # Get current item
         get_resp = self.GetItem(p3.GetItemRequest(item_id=request.item_id), context)
         if not get_resp.found:
-            return p3.PlaceBidResponse(ok=False, new_price=0, pod=HOSTNAME)
+            return p3.PlaceBidResponse(ok=False, new_price=0, pod=CONTAINER_NAME)
         item = get_resp.item
         if request.bid_amount > item.current_price:
             item.current_price = request.bid_amount
@@ -183,14 +184,14 @@ class FrontendServicer(p3_grpc.FrontendServiceServicer):
                             status="active",
                             timestamp=int(time.time())
                         ))
-                return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=HOSTNAME)
-        return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=HOSTNAME)
+                return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=CONTAINER_NAME)
+        return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
 
     def JoinAuction(self, request, context):
         # For streaming, yield updates
         # Bare bones: just yield initial, and wait for bids
         # But to keep simple, yield nothing for now.
-        print(f"'{HOSTNAME}' JoinAuction {request.item_id}", flush=True)
+        print(f"'{CONTAINER_NAME}' JoinAuction {request.item_id}", flush=True)
         # For bare bones, just return empty stream
         return
 
@@ -263,6 +264,7 @@ class Controller:
 
 def serve():
     global HOSTNAME
+    global CONTAINER_NAME
     global STORAGE_PORT
     global STORAGE_TARGET
     global PORT
@@ -270,6 +272,7 @@ def serve():
     global auction_listeners
 
     HOSTNAME = os.environ.get("HOSTNAME", "controller-node")
+    CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "p3-controller-node")
     PORT = os.environ.get("PORT", "50050")
     DATA = {}
     SERVICE_PORT = os.environ.get("SERVICE_PORT", "50150")
@@ -284,8 +287,8 @@ def serve():
     p3_grpc.add_FrontendServiceServicer_to_server(controller.frontend_servicer, server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
-    print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
-    print(f"Frontend '{HOSTNAME}' listening on {PORT}", flush=True)
+    print(f"Controller '{CONTAINER_NAME}' listening on {PORT}", flush=True)
+    print(f"Frontend '{CONTAINER_NAME}' listening on {PORT}", flush=True)
 
     for i in range(5):
         print(f"Attempting to spawn service node {i}")
