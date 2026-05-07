@@ -23,7 +23,6 @@ def run_cmd(cmd, check=True, verbose=True):
     return res
 
 
-
 def network_exists(network):
     result = run_cmd(
         ["docker", "network", "ls", "--format", "{{.Name}}"],
@@ -299,37 +298,6 @@ def serve():
         controller.stop_service_node(i)
     time.sleep(5)
 
-    # parser = argparse.ArgumentParser(description="Simple storage replica controller")
-    # parser.add_argument("--image", default="storage:latest")
-    # parser.add_argument("--network", default="project3-net")
-    # parser.add_argument("--port", type=int, default=50052)
-    # parser.add_argument("--replicas", type=int, default=2)
-    # parser.add_argument(
-    #     "--host-port-base",
-    #     type=int,
-    #     default=60052,
-    #     help="Host port for storage-0 (storage-i uses base+i)",
-    # )
-    # parser.add_argument("--interval", type=int, default=5)
-    # parser.add_argument("--timeout", type=int, default=2)
-    # args = parser.parse_args()
-
-    def docker_sdk_test():
-        # import docker
-        # docker_client = docker.from_env()
-        # print(docker_client)
-        # print(docker_client.containers.list())
-        # print(docker_client.containers.get("p3-controller"))
-        print(running_service_nodes())
-    docker_sdk_test()
-
-    # server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    # p3_grpc.add_ControllerServiceServicer_to_server(controller.controller_servicer, server)
-    # p3_grpc.add_FrontendServiceServicer_to_server(controller.frontend_servicer, server)
-    # server.add_insecure_port(f"[::]:{PORT}")
-    # server.start()
-    # print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
-    # print(f"Frontend '{HOSTNAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
     # ensure_network(args.network)

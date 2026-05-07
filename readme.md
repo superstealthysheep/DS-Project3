@@ -2,13 +2,19 @@
 
 1. Vscode devcontainer extension should auto-build devcontainer for you
 
-2. 
+2. Make protofiles
 ```bash
 you@devcontainer $ make proto
 ```
 NOTE: you will need to run this in the devcontainer whenever you make updates to the protofile
 
-3. 
+3. Optional: start logs in a new terminal on host machine
+```bash
+you@host_machine: $ make follow
+```
+The logs produced by `make follow` have the benefit of including messages from containers spun up during the running of the system (e.g. service containers)
+
+4. Start system
 ```bash
 # (if necessary, `docker rm` old containers:)
 you@host_machine $ make purge-containers
@@ -19,9 +25,7 @@ you@host_machine $ make up
 
 ## High-level architecture
 
-We should merge these two code paths together
-
-### Docker compose version
+### Docker compose
 Controller node runs two services:
 - `FrontendService` (external API accessed by clients)
 - `ControllerService` (internal API, for e.g. receiving heartbeats)
@@ -30,12 +34,6 @@ Storage nodes run two services:
 - `StorageNodeService` (external API, abstracted for ease of use)
 - `ReplicaNodeService` (internal API for inter-replica communication)
 
-### Non-Docker-compose version
-Run each of the following in their own terminal in the devcontainer:
-- `frontend/server.py`
-- `client/client.py`
-(this is not working for me rn. getting when client tries to connect to server to make rpc call? -William)
-
 ## Containers and their configs:
 - Host machine
 - Devcontainer
@@ -43,7 +41,7 @@ Run each of the following in their own terminal in the devcontainer:
 - Nodes (controller, service)
     - `docker/docker-compose.yml`
     - `docker/Dockerfile`
-    - `controller/controller.py` (has config for service node)
+    - `controller/controller.py` (has config for service node inline)
 - Replica (aka storage) nodes:
     - `docker/docker-compose.yml`
     - `replica-node/Dockerfile`

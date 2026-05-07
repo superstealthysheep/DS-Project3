@@ -3,8 +3,9 @@
 purge-containers:
 	# a little scuffed
 	# (leading dash to not quit on error)
-	-docker rm $$(docker ps --all --filter name="^p3-controller" --quiet)
-	-docker rm $$(docker ps --all --filter name="^p3-service-node-" --quiet)
+	-docker rm -f $$(docker ps --all --filter name="^p3-controller" --quiet)
+	-docker rm -f $$(docker ps --all --filter name="^p3-service-node-" --quiet)
+	-docker rm -f $$(docker ps --all --filter name="^p3-replica-node-" --quiet)
 # 	-docker rm $$(docker ps --all --filter name="^project3-service-node-" --quiet)
 
 # server up
@@ -21,9 +22,11 @@ cup:
 up: purge-containers # purging each time a bit scuffed but ehh
 
 	(cd docker ; docker compose --profile template up --build --no-start; )
-	(cd docker ; docker compose --profile server --profile client up --build; cd ..)
-# 	(cd docker ; docker compose --profile server --profile client up --build --force-recreate; cd ..)
-# 
+	(cd docker ; docker compose --profile server --profile client up --build --force-recreate; cd ..)
+
+.PHONY: follow
+follow:
+	(cd docker; docker compose logs --follow)
 
 .PHONY: down
 down:
