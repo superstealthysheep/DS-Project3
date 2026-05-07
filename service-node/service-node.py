@@ -5,6 +5,8 @@ import grpc
 
 import project3_pb2 as p3
 import project3_pb2_grpc as p3_grpc
+import utils.log_util as log
+# import log_util as log
 
 HOSTNAME = os.environ.get("HOSTNAME", "service-node")
 PORT = os.environ.get("PORT", "50051")
@@ -30,7 +32,8 @@ def serve():
     p3_grpc.add_ServiceNodeServiceServicer_to_server(ServiceNode(), server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
-    print(f"Service node '{HOSTNAME}' listening on {PORT}", flush=True)
+    # print(f"Service node '{HOSTNAME}' listening on {PORT}", flush=True)
+    log.info(f"Service node '{HOSTNAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
 

@@ -12,8 +12,9 @@ COPY ./proto /app/proto
 COPY ./controller ./app/controller
 COPY ./service-node ./app/service-node
 COPY ./client ./app/client
+COPY ./utils ./app/utils
 COPY ./docker ./app/docker
-ENV PYTHONPATH=$PYTHONPATH:/app/proto/src
+ENV PYTHONPATH=$PYTHONPATH:/app:/app/proto/src
 
 ENV TARGET=controller:50050
 

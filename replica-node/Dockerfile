@@ -16,6 +16,6 @@ RUN uv pip install --system -r requirements.txt
 COPY proto /app/proto
 COPY replica-node /app/replica-node
 COPY service-node /app/service-node
-ENV PYTHONPATH=$PYTHONPATH:/app/proto/src
+ENV PYTHONPATH=$PYTHONPATH:/app:/app/proto/src
 
 # CMD ["python", "-u", "replica-node/replica-node.py"]
