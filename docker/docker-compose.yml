@@ -60,20 +60,31 @@ services:
     command: ["python", "-u", "controller/controller.py"]
     profiles: [server]
 
-  service-node-0:
-    <<: [*shared-config, *service-config] # note for yaml noobs like me: this is how you include keys from two or more referenced maps
-    container_name: p3-service-node-0
-    hostname: service-node-0
-    environment:
-      PORT: 50150
-  # service-node-1:
-  #   <<: [*shared-config, *service-config]
-  #   container_name: p3-service-node-1
-  #   hostname: service-node-1
-  # service-node-2:
-  #   <<: [*shared-config, *service-config]
-  #   container_name: p3-service-node-2
-  #   hostname: service-node-2
+  service-node-template:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    networks:
+      - project3-net
+    working_dir: /app
+    image: project3_service_node:latest # just label for the container; doesn't exist in any registry
+    pull_policy: never # thus don't pull
+    profiles: [template]
+
+  # service-node-0:
+  #   <<: [*shared-config, *service-config] # note for yaml noobs like me: this is how you include keys from two or more referenced maps
+  #   container_name: p3-service-node-0
+  #   hostname: service-node-0
+  #   environment:
+  #     PORT: 50150
+  # # service-node-1:
+  # #   <<: [*shared-config, *service-config]
+  # #   container_name: p3-service-node-1
+  # #   hostname: service-node-1
+  # # service-node-2:
+  # #   <<: [*shared-config, *service-config]
+  # #   container_name: p3-service-node-2
+  # #   hostname: service-node-2
 
   replica-node-0:
     <<: *replica-config
@@ -90,5 +101,6 @@ services:
       PORT: 50350
 
 networks:
-  project3-net:
+  project3-net: # if rename this, update utils/config.py accordingly
     name: project3-net
+    driver: bridge # (default)

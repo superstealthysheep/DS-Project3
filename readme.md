@@ -43,6 +43,7 @@ Run each of the following in their own terminal in the devcontainer:
 - Nodes (controller, service)
     - `docker/docker-compose.yml`
     - `docker/Dockerfile`
+    - `controller/controller.py` (has config for service node)
 - Replica (aka storage) nodes:
     - `docker/docker-compose.yml`
     - `replica-node/Dockerfile`

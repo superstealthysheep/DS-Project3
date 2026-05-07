@@ -1,6 +1,7 @@
 import argparse
 import subprocess
 import time
+import google.protobuf
 
 import grpc
 import project3_pb2 as p3
@@ -8,6 +9,10 @@ import project3_pb2_grpc as p3_grpc
 
 import os
 from concurrent import futures
+
+import docker
+import utils.config as config
+import utils.network_conventions as net_con
 
 def run_cmd(cmd, check=True, verbose=True):
     if verbose: print(" ".join(cmd))
@@ -17,9 +22,6 @@ def run_cmd(cmd, check=True, verbose=True):
         print(res.stdout)
     return res
 
-
-def replica_name(i):
-    return f"storage-{i}"
 
 
 def network_exists(network):
@@ -91,16 +93,25 @@ def grpc_healthy(host_port, timeout_sec):
     finally:
         channel.close()
 
-
-def running_storage_replicas():
-    result = run_cmd(
-        ["docker", "ps", "--filter", "name=^storage-", "--format", "{{.Names}}"],
-        check=False,
-    )
-    names = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+def running_service_nodes():
+    dc: docker.DockerClient = docker.from_env()
+    names = []
+    for container in dc.containers.list(filters={
+        'name': "^p3-service-node-",
+    }):
+        names.append(container.name)
     return sorted(names)
 
-class Controller(p3_grpc.ControllerServiceServicer):
+def running_replica_nodes():
+    dc: docker.DockerClient = docker.from_env()
+    names = []
+    for container in dc.containers.list(filters={
+        'name': "^p3-replica-node-",
+    }):
+        names.append(container.name)
+    return sorted(names)
+
+class ControllerServicer(p3_grpc.ControllerServiceServicer):
     def C_CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
         return p3.CreateItemResponse(
             success=False,
@@ -113,10 +124,16 @@ class Controller(p3_grpc.ControllerServiceServicer):
             item=None,
         )
 
-class Frontend(p3_grpc.FrontendServiceServicer):
+    def C_SendHeartbeat(self, request: p3.Heartbeat, context: grpc.ServicerContext):
+        container_name = request.node_id
+        self.controller.heartbeat_callback(container_name)
+        return google.protobuf.empty_pb2.Empty()
+
+class FrontendServicer(p3_grpc.FrontendServiceServicer):
     global HOSTNAME
     global STORAGE_TARGET
     global auction_listeners
+
     def CreateItem(self, request, context):
         with grpc.insecure_channel(STORAGE_TARGET) as channel:
             stub = p3_grpc.StorageServiceStub(channel)
@@ -178,6 +195,73 @@ class Frontend(p3_grpc.FrontendServiceServicer):
         # For bare bones, just return empty stream
         return
 
+class Controller:
+    def __init__(self):
+        self.service_nodes = {} # dict mapping 'id' -> dict with keys {'address', 'port', 'busy'}
+        self.replica_nodes = {} # dict mapping 'id' -> dict with keys {'address', 'port', 'busy'}
+        self.docker_client: docker.DockerClient = docker.from_env()
+        self.service_node_image = "project3_service_node:latest"
+        self.container_name = "p3-controller"
+
+        self.controller_servicer = ControllerServicer()
+        self.controller_servicer.controller = self
+        self.frontend_servicer = FrontendServicer()
+        self.frontend_servicer.controller = self
+
+    def spawn_service_node(self, id: int):
+        assert id not in self.service_nodes
+        assert id in range(50)
+        container_name = net_con.service_node_name(id)
+        port = net_con.service_node_port(id)
+        self.docker_client.containers.run(
+            image=self.service_node_image,
+            detach=True,
+            name=container_name,
+            ports={"80": port},
+            network=config.NETWORK,
+            environment={
+                "SERVICE_NODE_ID": str(id),
+                "CONTROLLER_ADDRESSS": self.container_name,
+                "CONTROLLER_PORT": 50050,
+                # "CONTROLLER_PORT": str(80),
+            },
+            labels={
+                "com.docker.compose.project": config.COMPOSE_PROJECT_NAME,
+                "com.docker.compose.service": container_name
+            },
+            command=["python", "-u", "service-node/ack_then_serve.py"],
+        )
+        self.service_nodes[id] = {
+            'address': container_name,
+            # 'port': 80,
+            'port': port, # or is it 80?
+            'status': "spawning"
+        }
+        print(f"{self.service_nodes[id]=}")
+
+    def stop_service_node(self, id: int):
+        assert id in self.service_nodes
+        if self.service_nodes[id]['status'] == "busy":
+            raise NotImplementedError("Must handle trying to stop busy container. Maybe just return fail?")
+        container_info = self.service_nodes.pop(id)
+        
+        container = self.docker_client.containers.get(
+            net_con.service_node_name(id)
+        )
+        container.stop()
+
+    def get_service_node(self):
+        ...
+
+    def heartbeat_callback(self, sender_container_id):
+        """ only purpose is to receive heartbeats from service nodes when they have fully spawned """
+        if sender_container_id.startswith(net_con.SERVICE_NODE_PREFIX):
+            # scuffed
+            sender_id = sender_container_id[len(net_con.SERVICE_NODE_PREFIX):]
+            sender_id = int(sender_id)
+            if self.service_nodes[sender_id]['status'] == "spawning":
+                self.service_nodes[sender_id]['status'] = "ready"
+
 def serve():
     global HOSTNAME
     global STORAGE_PORT
@@ -195,6 +279,25 @@ def serve():
     auction_listeners = {}
 
     print("dummy controller")
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    controller = Controller()
+    p3_grpc.add_ControllerServiceServicer_to_server(controller.controller_servicer, server)
+    p3_grpc.add_FrontendServiceServicer_to_server(controller.frontend_servicer, server)
+    server.add_insecure_port(f"[::]:{PORT}")
+    server.start()
+    print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
+    print(f"Frontend '{HOSTNAME}' listening on {PORT}", flush=True)
+
+    for i in range(5):
+        print(f"Attempting to spawn service node {i}")
+        controller.spawn_service_node(i)
+
+    import time
+    time.sleep(15)
+    print(running_service_nodes())
+    for i in range(5):
+        controller.stop_service_node(i)
+    time.sleep(5)
 
     # parser = argparse.ArgumentParser(description="Simple storage replica controller")
     # parser.add_argument("--image", default="storage:latest")
@@ -212,20 +315,21 @@ def serve():
     # args = parser.parse_args()
 
     def docker_sdk_test():
-        import docker
-        docker_client = docker.from_env()
-        print(docker_client)
-        print(docker_client.containers.list())
-        print(docker_client.containers.get("p3-controller"))
+        # import docker
+        # docker_client = docker.from_env()
+        # print(docker_client)
+        # print(docker_client.containers.list())
+        # print(docker_client.containers.get("p3-controller"))
+        print(running_service_nodes())
     docker_sdk_test()
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    p3_grpc.add_ControllerServiceServicer_to_server(Controller(), server)
-    p3_grpc.add_FrontendServiceServicer_to_server(Frontend(), server)
-    server.add_insecure_port(f"[::]:{PORT}")
-    server.start()
-    print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
-    print(f"Frontend '{HOSTNAME}' listening on {PORT}", flush=True)
+    # server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    # p3_grpc.add_ControllerServiceServicer_to_server(controller.controller_servicer, server)
+    # p3_grpc.add_FrontendServiceServicer_to_server(controller.frontend_servicer, server)
+    # server.add_insecure_port(f"[::]:{PORT}")
+    # server.start()
+    # print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
+    # print(f"Frontend '{HOSTNAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
     # ensure_network(args.network)

@@ -352,14 +352,18 @@ class ControllerServiceStub(object):
                 request_serializer=project3__pb2.PlaceBidRequest.SerializeToString,
                 response_deserializer=project3__pb2.PlaceBidResponse.FromString,
                 _registered_method=True)
+        self.C_SendHeartbeat = channel.unary_unary(
+                '/project3.ControllerService/C_SendHeartbeat',
+                request_serializer=project3__pb2.Heartbeat.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class ControllerServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def C_CreateItem(self, request, context):
-        """TODO: populate messages
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -389,8 +393,15 @@ class ControllerServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def C_PlaceBid(self, request, context):
-        """rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
-        rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def C_SendHeartbeat(self, request, context):
+        """TODO: populate messages
+        rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
+        (how callee sends a heartbeat message to the controller)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -428,6 +439,11 @@ def add_ControllerServiceServicer_to_server(servicer, server):
                     servicer.C_PlaceBid,
                     request_deserializer=project3__pb2.PlaceBidRequest.FromString,
                     response_serializer=project3__pb2.PlaceBidResponse.SerializeToString,
+            ),
+            'C_SendHeartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.C_SendHeartbeat,
+                    request_deserializer=project3__pb2.Heartbeat.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -602,6 +618,33 @@ class ControllerService(object):
             metadata,
             _registered_method=True)
 
+    @staticmethod
+    def C_SendHeartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/project3.ControllerService/C_SendHeartbeat',
+            project3__pb2.Heartbeat.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
 
 class ServiceNodeServiceStub(object):
     """Missing associated documentation comment in .proto file."""
@@ -648,8 +691,7 @@ class ServiceNodeServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def S_CreateItem(self, request, context):
-        """TODO: populate
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -679,7 +721,8 @@ class ServiceNodeServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def S_PlaceBid(self, request, context):
-        """rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+        """TODO: populate
+        rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
         rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)

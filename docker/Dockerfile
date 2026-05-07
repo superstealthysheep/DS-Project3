@@ -16,6 +16,6 @@ COPY ./utils ./app/utils
 COPY ./docker ./app/docker
 ENV PYTHONPATH=$PYTHONPATH:/app:/app/proto/src
 
-ENV TARGET=controller:50050
+ENV TARGET=p3-controller:50050
 
 WORKDIR /app

@@ -115,7 +115,7 @@ service ControllerService {
   rpc C_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
   // TODO: populate messages
   // rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
-  // rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
+  rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
 }
 
 service ServiceNodeService {
