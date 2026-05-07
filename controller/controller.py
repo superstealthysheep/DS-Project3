@@ -252,8 +252,6 @@ class Controller:
         )
         container.stop()
 
-    def get_service_node(self):
-        ...
     def spawn_replica_node(self, id: int):
         assert id not in self.replica_nodes
         assert id in range(50)
@@ -311,6 +309,25 @@ class Controller:
             if collection[sender_id]['status'] == "spawning":
                 collection[sender_id]['status'] = "ready"
 
+    def autoscaling_policy(self, desired_n_ready=1):
+        """ tries to ensure that there is one ready (or spawning) container at all times """
+        n_ready = sum(sn['status'] in {'ready', 'spawning'} for sn in self.service_nodes)
+        disparity = n_ready - desired_n_ready
+
+        # scale up
+        id = 0
+        while disparity < 0 and id in range(50):
+            if disparity < 0 and id not in self.service_nodes:
+                self.spawn_service_node(id)
+                disparity += 1
+            id += 1
+
+        # scale down
+        for id,service_node in self.service_nodes.items():
+            if not disparity > 0: break
+            if service_node['status'] == 'ready':
+                self.stop_service_node(id)
+                disparity -= 1
 
 def serve():
     global HOSTNAME
@@ -340,13 +357,12 @@ def serve():
     print(f"Controller '{CONTAINER_NAME}' listening on {PORT}", flush=True)
     print(f"Frontend '{CONTAINER_NAME}' listening on {PORT}", flush=True)
 
-    for i in range(5):
-        print(f"Attempting to spawn service node {i}")
-        controller.spawn_service_node(i)
     for i in range(controller.n_replicas):
         print(f"Attempting to spawn replica node {i}")
         controller.spawn_replica_node(i)
 
+    controller.autoscaling_policy() # TODO: call this intermittently?
+    
     import time
     time.sleep(15)
     print(running_service_nodes())

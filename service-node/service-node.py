@@ -106,7 +106,8 @@ def serve():
 def ack_then_serve():
     # for when spawned by controller, should send an "yes, i am alive" message to controller before beginning to serve
 
-    my_id = int(os.environ.get("SERVICE_NODE_ID", "-1"))
+    my_id = int(os.environ.get("SERVICE_NODE_ID"))
+    assert my_id is not None and my_id in range(50)
     my_container_name = net_con.service_node_name(my_id)
     controller_address = os.environ.get("CONTROLLER_ADDRESS", "p3-controller")
     controller_port = os.environ.get("CONTROLLER_PORT", "50050")

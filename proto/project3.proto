@@ -123,8 +123,8 @@ service ServiceNodeService {
   rpc S_GetItem(GetItemRequest) returns (GetItemResponse);
   rpc S_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
   rpc S_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
-  rpc S_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
   rpc S_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  rpc S_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
   // TODO: populate
   // rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
   // rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node

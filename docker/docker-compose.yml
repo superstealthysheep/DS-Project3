@@ -70,6 +70,7 @@ services:
     image: project3_service_node:latest # just label for the container; doesn't exist in any registry
     pull_policy: never # thus don't pull
     profiles: [template]
+    command: ["python", "-u", "service-node/service_node.py"]
 
   replica-node-template:
     build:
