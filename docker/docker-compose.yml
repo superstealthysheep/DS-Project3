@@ -14,25 +14,25 @@ x-all-nodes-shared-config: &shared-config
   networks:
     - project3-net
   working_dir: /app
-  image: project3_image:latest # just label for the container; doesn't exist in any registry
+  # image: project3-image:latest # just label for the container; doesn't exist in any registry
   pull_policy: never # thus don't pull
 
-x-service-nodes-shared-config: &service-config
-  command: ["python", "-u", "service-node/service-node.py"]
-  profiles: [server]
+# x-service-nodes-shared-config: &service-config
+#   command: ["python", "-u", "service_node/service_node.py"]
+#   profiles: [server]
 
-x-replica-nodes-config: &replica-config
-  networks:
-    - project3-net
-  working_dir: /app
-  image: project3_replica_image:latest # just label for the container; doesn't exist in any registry
-  pull_policy: never # thus don't pull
+# x-replica-nodes-config: &replica-config
+#   networks:
+#     - project3-net
+#   working_dir: /app
+#   image: project3-replica-image:latest # just label for the container; doesn't exist in any registry
+#   pull_policy: never # thus don't pull
 
-  build:
-    context: ..
-    dockerfile: replica-node/Dockerfile
-  command: ["python", "-u", "replica-node/replica-node.py"]
-  profiles: [server]
+#   build:
+#     context: ..
+#     dockerfile: replica_node/Dockerfile
+#   command: ["python", "-u", "replica_node/replica_node.py"]
+#   profiles: [server]
 
 x-client-nodes-config: &client-config
   build:
@@ -41,7 +41,7 @@ x-client-nodes-config: &client-config
   networks:
     - project3-net
   working_dir: /app
-  image: project3_client_image:latest
+  image: project3-client-image:latest
   pull_policy: never
   command: ["python", "-u", "client/client.py", "create-item", "1", "2", "3", "4", "5", "6"]
   profiles: [client]
@@ -58,6 +58,7 @@ services:
       # mount docker socket so controller can spin up containers
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["python", "-u", "controller/controller.py"]
+    image: project3-controller-image:latest
     profiles: [server]
 
   service-node-template:
@@ -67,22 +68,22 @@ services:
     networks:
       - project3-net
     working_dir: /app
-    image: project3_service_node:latest # just label for the container; doesn't exist in any registry
+    image: project3-service-node-image:latest # just label for the container; doesn't exist in any registry
     pull_policy: never # thus don't pull
     profiles: [template]
-    command: ["python", "-u", "service-node/service_node.py"]
+    command: ["python", "-u", "service_node/service_node.py"]
 
   replica-node-template:
     build:
       context: ..
-      dockerfile: replica-node/Dockerfile
+      dockerfile: replica_node/Dockerfile
     networks:
       - project3-net
     working_dir: /app
-    image: project3_replica_node:latest
+    image: project3-replica-node-image:latest
     pull_policy: never
     profiles: [template]
-    command: ["python", "-u", "replica-node/replica_node.py"]
+    command: ["python", "-u", "replica_node/replica_node.py"]
 
   # service-node-0:
   #   <<: [*shared-config, *service-config] # note for yaml noobs like me: this is how you include keys from two or more referenced maps

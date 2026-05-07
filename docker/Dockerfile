@@ -10,7 +10,7 @@ RUN uv pip install --system -r requirements.txt
 
 COPY ./proto /app/proto
 COPY ./controller ./app/controller
-COPY ./service-node ./app/service-node
+COPY ./service_node ./app/service_node
 COPY ./client ./app/client
 COPY ./utils ./app/utils
 COPY ./docker ./app/docker

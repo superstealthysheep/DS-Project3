@@ -38,7 +38,7 @@ def serve():
 
     HOSTNAME = os.environ.get("HOSTNAME", "replica-node")
     CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "p3-replica-node")
-    PORT = os.environ.get("PORT", "50250")
+    PORT = os.environ.get("PORT", str(net_con.REPLICA_NODE_BASE_PORT))
     DATA = {}
     storage = Storage()
 
@@ -57,10 +57,12 @@ def ack_then_serve():
     my_id = int(os.environ.get("REPLICA_NODE_ID"))
     assert my_id is not None and my_id in range(50), "Invalid REPLICA_NODE_ID"
     my_container_name = net_con.replica_node_name(my_id)
-    controller_address = os.environ.get("CONTROLLER_ADDRESS", "p3-controller")
-    controller_port = os.environ.get("CONTROLLER_PORT", "50050")
+
+    controller_address = os.environ.get("CONTROLLER_ADDRESS", net_con.CONTROLLER_NODE_NAME)
+    controller_port = os.environ.get("CONTROLLER_PORT", str(net_con.CONTROLLER_NODE_BASE_PORT))
     controller_full_address = f"{controller_address}:{controller_port}"
     print(f"{controller_full_address=}")
+
     with grpc.insecure_channel(controller_full_address) as channel:
         stub = p3_grpc.ControllerServiceStub(channel)
         heartbeat_msg = p3.Heartbeat(node_id=my_container_name)

@@ -41,16 +41,24 @@ Storage nodes run two services:
 - Nodes (controller, service)
     - `docker/docker-compose.yml`
     - `docker/Dockerfile`
-    - `controller/controller.py` (has config for service node inline)
+    - `controller/controller.py` (has config for when controller spins up service node)
 - Replica (aka storage) nodes:
     - `docker/docker-compose.yml`
-    - `replica-node/Dockerfile`
+    - `replica_node/Dockerfile`
+    - `controller/controller.py` (has config for when controller spins up replica node)
 
 ## Port conventions
 - Controller at `50050`
 - Service nodes at range starting at `50150`
 - Storage nodes at range starting at `50250`
 - Client nodes at range starting at `50350`(?)
+Specified both in `/util/network_conventions.py` and relevant Docker configs
+
+## Naming conventions:
+- Docker images: `project3-{...}-image:latest`
+- Docker containers: `p3-{...}-{id}`
+- Networks: `project3-net`
+Specified both in `/util/network_conventions.py` and relevant Docker configs
 
 ### Areas of minor interest:
 - `.uv_cache` is used project-wide to cache libraries (for devcontainer, for nodes)

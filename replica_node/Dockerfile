@@ -11,16 +11,16 @@ COPY requirements.txt .
 RUN uv pip install --system -r requirements.txt
 
 # COPY proto ./app/proto
-# COPY replica-node ./app/replica-node
+# COPY replica_node ./app/replica_node
 # COPY storage ./app/storage
 COPY proto /app/proto
-COPY replica-node /app/replica-node
-COPY service-node /app/service-node
+COPY replica_node /app/replica_node
+COPY service_node /app/service_node
 COPY utils /app/utils
 ENV PYTHONPATH=$PYTHONPATH:/app:/app/proto/src
 
 # for replicas not spawned by container
-CMD ["python", "-u", "replica-node/replica-node.py"]
+CMD ["python", "-u", "replica_node/replica_node.py"]
 # # for replicas spawned by container (override applied in spawner function)
-# CMD ["python", "-u", "replica-node/ack_then_serve.py"]
+# CMD ["python", "-u", "replica_node/ack_then_serve.py"]
 

@@ -96,7 +96,7 @@ def running_service_nodes():
     dc: docker.DockerClient = docker.from_env()
     names = []
     for container in dc.containers.list(filters={
-        'name': "^p3-service-node-",
+        'name': f"^{net_con.SERVICE_NODE_PREFIX}",
     }):
         names.append(container.name)
     return sorted(names)
@@ -105,7 +105,7 @@ def running_replica_nodes():
     dc: docker.DockerClient = docker.from_env()
     names = []
     for container in dc.containers.list(filters={
-        'name': "^p3-replica-node-",
+        'name': f"^{net_con.REPLICA_NODE_PREFIX}",
     }):
         names.append(container.name)
     return sorted(names)
@@ -200,9 +200,10 @@ class Controller:
         self.service_nodes = {} # dict mapping 'id' -> dict with keys {'address', 'port', 'busy'}
         self.replica_nodes = {} # dict mapping 'id' -> dict with keys {'address', 'port', 'busy'}
         self.docker_client: docker.DockerClient = docker.from_env()
-        self.service_node_image = "project3_service_node:latest"
-        self.replica_node_image = "project3_replica_node:latest"
-        self.container_name = "p3-controller"
+        self.service_node_image = net_con.SERVICE_NODE_IMAGE_NAME
+        self.replica_node_image = net_con.REPLICA_NODE_IMAGE_NAME
+        self.container_name = net_con.CONTROLLER_NODE_NAME
+        self.port = net_con.CONTROLLER_NODE_BASE_PORT
         self.n_replicas = 5
 
         self.controller_servicer = ControllerServicer()
@@ -214,29 +215,27 @@ class Controller:
         assert id not in self.service_nodes
         assert id in range(50)
         container_name = net_con.service_node_name(id)
-        port = net_con.service_node_port(id)
+        sn_port = net_con.service_node_port(id)
         self.docker_client.containers.run(
             image=self.service_node_image,
             detach=True,
             name=container_name,
-            ports={"80": port},
+            ports={"80": sn_port},
             network=config.NETWORK,
             environment={
                 "SERVICE_NODE_ID": str(id),
                 "CONTROLLER_ADDRESSS": self.container_name,
-                "CONTROLLER_PORT": 50050,
-                # "CONTROLLER_PORT": str(80),
+                "CONTROLLER_PORT": str(self.port),
             },
             labels={
                 "com.docker.compose.project": config.COMPOSE_PROJECT_NAME,
                 "com.docker.compose.service": container_name
             },
-            command=["python", "-u", "service-node/ack_then_serve.py"],
+            command=["python", "-u", "service_node/ack_then_serve.py"],
         )
         self.service_nodes[id] = {
             'address': container_name,
-            # 'port': 80,
-            'port': port, # or is it 80?
+            'port': sn_port, # or is it 80?
             'status': "spawning"
         }
         print(f"{self.service_nodes[id]=}")
@@ -257,27 +256,27 @@ class Controller:
         assert id in range(50)
         container_name = net_con.replica_node_name(id)
         print(f"{container_name=}")
-        port = net_con.replica_node_port(id)
+        rn_port = net_con.replica_node_port(id)
         self.docker_client.containers.run(
             image=self.replica_node_image,
             detach=True,
             name=container_name,
-            ports={"80": port},
+            ports={"80": rn_port},
             network=config.NETWORK,
             environment={
                 "REPLICA_NODE_ID": str(id),
                 "CONTROLLER_ADDRESSS": self.container_name,
-                "CONTROLLER_PORT": 50050,
+                "CONTROLLER_PORT": str(self.port),
             },
             labels={
                 "com.docker.compose.project": config.COMPOSE_PROJECT_NAME,
                 "com.docker.compose.service": container_name
             },
-            command=["python", "-u", "replica-node/ack_then_serve.py"],
+            command=["python", "-u", "replica_node/ack_then_serve.py"],
         )
         self.replica_nodes[id] = {
             'address': container_name,
-            'port': port,
+            'port': rn_port,
             'status': "spawning"
         }
         print(f"{self.replica_nodes[id]=}")
@@ -340,10 +339,10 @@ def serve():
 
     HOSTNAME = os.environ.get("HOSTNAME", "controller-node")
     CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "p3-controller-node")
-    PORT = os.environ.get("PORT", "50050")
+    PORT = os.environ.get("PORT", net_con.CONTROLLER_NODE_BASE_PORT)
     DATA = {}
-    SERVICE_PORT = os.environ.get("SERVICE_PORT", "50150")
-    STORAGE_PORT = os.environ.get("STORAGE_PORT", "50250")
+    SERVICE_PORT = os.environ.get("SERVICE_PORT", net_con.SERVICE_NODE_BASE_PORT)
+    STORAGE_PORT = os.environ.get("STORAGE_PORT", net_con.REPLICA_NODE_BASE_PORT)
     STORAGE_TARGET = f"{net_con.replica_node_name(id=0)}:{STORAGE_PORT}"
     auction_listeners = {}
 

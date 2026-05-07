@@ -9,8 +9,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto', 'src')
 import project3_pb2 as p3
 import project3_pb2_grpc as p3_grpc
 
+import utils.config as config
+import utils.log_util as log
+import utils.network_conventions as net_con
+
 # TARGET = os.environ.get("TARGET", "localhost:50050")
-TARGET = os.environ.get("TARGET", "host.docker.internal:50050")
+# TARGET = os.environ.get("TARGET", "host.docker.internal:50050")
+TARGET = os.environ.get("TARGET", f"{net_con.CONTROLLER_NODE_NAME}:{net_con.CONTROLLER_NODE_BASE_PORT}")
 
 def execute_command(argv):
     FAIL = 1

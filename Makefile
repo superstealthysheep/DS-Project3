@@ -6,7 +6,7 @@ purge-containers:
 	-docker rm -f $$(docker ps --all --filter name="^p3-controller" --quiet)
 	-docker rm -f $$(docker ps --all --filter name="^p3-service-node-" --quiet)
 	-docker rm -f $$(docker ps --all --filter name="^p3-replica-node-" --quiet)
-# 	-docker rm $$(docker ps --all --filter name="^project3-service-node-" --quiet)
+	-docker rm -f $$(docker ps --all --filter name="^p3-client-node-" --quiet)
 
 # server up
 .PHONY: sup
