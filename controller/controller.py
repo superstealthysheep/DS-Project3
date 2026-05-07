@@ -201,7 +201,9 @@ class Controller:
         self.replica_nodes = {} # dict mapping 'id' -> dict with keys {'address', 'port', 'busy'}
         self.docker_client: docker.DockerClient = docker.from_env()
         self.service_node_image = "project3_service_node:latest"
+        self.replica_node_image = "project3_replica_node:latest"
         self.container_name = "p3-controller"
+        self.n_replicas = 5
 
         self.controller_servicer = ControllerServicer()
         self.controller_servicer.controller = self
@@ -252,15 +254,63 @@ class Controller:
 
     def get_service_node(self):
         ...
+    def spawn_replica_node(self, id: int):
+        assert id not in self.replica_nodes
+        assert id in range(50)
+        container_name = net_con.replica_node_name(id)
+        print(f"{container_name=}")
+        port = net_con.replica_node_port(id)
+        self.docker_client.containers.run(
+            image=self.replica_node_image,
+            detach=True,
+            name=container_name,
+            ports={"80": port},
+            network=config.NETWORK,
+            environment={
+                "REPLICA_NODE_ID": str(id),
+                "CONTROLLER_ADDRESSS": self.container_name,
+                "CONTROLLER_PORT": 50050,
+            },
+            labels={
+                "com.docker.compose.project": config.COMPOSE_PROJECT_NAME,
+                "com.docker.compose.service": container_name
+            },
+            command=["python", "-u", "replica-node/ack_then_serve.py"],
+        )
+        self.replica_nodes[id] = {
+            'address': container_name,
+            'port': port,
+            'status': "spawning"
+        }
+        print(f"{self.replica_nodes[id]=}")
+
+    def stop_replica_node(self, id: int):
+        assert id in self.replica_nodes
+        if self.replica_nodes[id]['status'] == "busy":
+            raise NotImplementedError("Must handle trying to stop busy container. Maybe just return fail?")
+        container_info = self.replica_nodes.pop(id)
+        
+        container = self.docker_client.containers.get(
+            net_con.replica_node_name(id)
+        )
+        container.stop()
 
     def heartbeat_callback(self, sender_container_id):
-        """ only purpose is to receive heartbeats from service nodes when they have fully spawned """
+        """ only purpose is to receive heartbeats from service/replica nodes when they have fully spawned """
         if sender_container_id.startswith(net_con.SERVICE_NODE_PREFIX):
-            # scuffed
+            collection = self.service_nodes
             sender_id = sender_container_id[len(net_con.SERVICE_NODE_PREFIX):]
+        elif sender_container_id.startswith(net_con.REPLICA_NODE_PREFIX):
+            collection = self.replica_nodes
+            sender_id = sender_container_id[len(net_con.REPLICA_NODE_PREFIX):]
+        else:
+            collection = None
+
+        if collection is not None:
             sender_id = int(sender_id)
-            if self.service_nodes[sender_id]['status'] == "spawning":
-                self.service_nodes[sender_id]['status'] = "ready"
+            if collection[sender_id]['status'] == "spawning":
+                collection[sender_id]['status'] = "ready"
+
 
 def serve():
     global HOSTNAME
@@ -277,7 +327,7 @@ def serve():
     DATA = {}
     SERVICE_PORT = os.environ.get("SERVICE_PORT", "50150")
     STORAGE_PORT = os.environ.get("STORAGE_PORT", "50250")
-    STORAGE_TARGET = f"replica-node-0:{STORAGE_PORT}"
+    STORAGE_TARGET = f"{net_con.replica_node_name(id=0)}:{STORAGE_PORT}"
     auction_listeners = {}
 
     print("dummy controller")
@@ -293,6 +343,9 @@ def serve():
     for i in range(5):
         print(f"Attempting to spawn service node {i}")
         controller.spawn_service_node(i)
+    for i in range(controller.n_replicas):
+        print(f"Attempting to spawn replica node {i}")
+        controller.spawn_replica_node(i)
 
     import time
     time.sleep(15)

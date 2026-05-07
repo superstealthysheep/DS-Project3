@@ -71,6 +71,18 @@ services:
     pull_policy: never # thus don't pull
     profiles: [template]
 
+  replica-node-template:
+    build:
+      context: ..
+      dockerfile: replica-node/Dockerfile
+    networks:
+      - project3-net
+    working_dir: /app
+    image: project3_replica_node:latest
+    pull_policy: never
+    profiles: [template]
+    command: ["python", "-u", "replica-node/replica_node.py"]
+
   # service-node-0:
   #   <<: [*shared-config, *service-config] # note for yaml noobs like me: this is how you include keys from two or more referenced maps
   #   container_name: p3-service-node-0
@@ -86,12 +98,12 @@ services:
   # #   container_name: p3-service-node-2
   # #   hostname: service-node-2
 
-  replica-node-0:
-    <<: *replica-config
-    container_name: p3-replica-node-0
-    hostname: replica-node-0
-    environment:
-      PORT: 50250
+  # replica-node-0:
+  #   <<: *replica-config
+  #   container_name: p3-replica-node-0
+  #   hostname: replica-node-0
+  #   environment:
+  #     PORT: 50250
 
   client-node-0:
     <<: *client-config
