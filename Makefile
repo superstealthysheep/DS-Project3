@@ -5,9 +5,20 @@ purge-containers:
 	docker rm $$(docker ps --all --filter name=p3-controller --quiet)
 	docker rm $$(docker ps --all --filter name=p3-service-node --quiet)
 
+# server up
+.PHONY: sup
+sup:
+	(cd docker ; docker compose --profile server up --build; cd ..)
+
+# client up
+.PHONY: cup
+cup:
+	(cd docker ; docker compose --profile client up --build; cd ..)
+
 .PHONY: up
 up:
-	(cd docker ; docker compose up --build ; cd ..)
+	(cd docker ; docker compose --profile server --profile client up --build; cd ..)
+
 
 # Devcontainer
 ## protofile

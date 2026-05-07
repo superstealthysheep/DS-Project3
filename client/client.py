@@ -9,11 +9,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto', 'src')
 import project3_pb2 as p3
 import project3_pb2_grpc as p3_grpc
 
-TARGET = os.environ.get("TARGET", "localhost:50050")
+# TARGET = os.environ.get("TARGET", "localhost:50050")
+TARGET = os.environ.get("TARGET", "host.docker.internal:50050")
 
-
-def main():
-    if len(sys.argv) < 2:
+def execute_command(argv):
+    FAIL = 1
+    if len(argv) < 2:
         print("Commands:")
         print("create-item <seller_id> <title> <category> <description> <starting_price> <quantity>")
         print("get-item <item_id>")
@@ -21,17 +22,18 @@ def main():
         print("update-item <item_id> <field> <value>")
         print("place-bid <item_id> <bidder_id> <bid_amount>")
         print("join-auction <item_id> <bidder_id>")
-        sys.exit(1)
+        print("interactive")
+        return FAIL
 
-    cmd = sys.argv[1].lower()
+    cmd = argv[1].lower()
     with grpc.insecure_channel(TARGET) as channel:
         stub = p3_grpc.FrontendServiceStub(channel)
         print(f"{stub.__dict__=}")
         if cmd == "create-item":
-            if len(sys.argv) < 8:
+            if len(argv) < 8:
                 print("create-item <seller_id> <title> <category> <description> <starting_price> <quantity>")
-                sys.exit(1)
-            _, _, seller_id, title, category, description, starting_price, quantity = sys.argv
+                return FAIL
+            _, _, seller_id, title, category, description, starting_price, quantity = argv
             starting_price = int(starting_price)
             quantity = int(quantity)
             item = p3.Item(
@@ -48,10 +50,10 @@ def main():
             r = stub.CreateItem(p3.CreateItemRequest(item=item))
             print({"ok": r.ok, "item_id": r.item_id, "pod": r.pod})
         elif cmd == "get-item":
-            if len(sys.argv) < 3:
+            if len(argv) < 3:
                 print("get-item <item_id>")
-                sys.exit(1)
-            item_id = sys.argv[2]
+                return FAIL
+            item_id = argv[2]
             r = stub.GetItem(p3.GetItemRequest(item_id=item_id))
             if r.found:
                 item_dict = {
@@ -70,11 +72,11 @@ def main():
             else:
                 print({"found": False, "pod": r.pod})
         elif cmd == "search-items":
-            if len(sys.argv) < 3:
+            if len(argv) < 3:
                 print("search-items <keyword> [category]")
-                sys.exit(1)
-            keyword = sys.argv[2]
-            category = sys.argv[3] if len(sys.argv) > 3 else ""
+                return FAIL
+            keyword = argv[2]
+            category = argv[3] if len(argv) > 3 else ""
             r = stub.SearchItems(p3.SearchItemsRequest(keyword=keyword, category=category))
             items = []
             for item in r.items:
@@ -87,15 +89,15 @@ def main():
                 })
             print({"items": items, "pod": r.pod})
         elif cmd == "update-item":
-            if len(sys.argv) < 5:
+            if len(argv) < 5:
                 print("update-item <item_id> <field> <value>")
-                sys.exit(1)
-            item_id, field, value = sys.argv[2], sys.argv[3], sys.argv[4]
+                return FAIL
+            item_id, field, value = argv[2], argv[3], argv[4]
             # First get current item
             r = stub.GetItem(p3.GetItemRequest(item_id=item_id))
             if not r.found:
                 print({"error": "item not found"})
-                sys.exit(1)
+                return FAIL
             item = r.item
             # Update the specified field
             if field == "title":
@@ -110,17 +112,17 @@ def main():
             r = stub.UpdateItem(p3.UpdateItemRequest(item_id=item_id, item=item))
             print({"ok": r.ok, "new_version": r.new_version, "pod": r.pod})
         elif cmd == "place-bid":
-            if len(sys.argv) < 5:
+            if len(argv) < 5:
                 print("place-bid <item_id> <bidder_id> <bid_amount>")
-                sys.exit(1)
-            item_id, bidder_id, bid_amount = sys.argv[2], sys.argv[3], int(sys.argv[4])
+                return FAIL
+            item_id, bidder_id, bid_amount = argv[2], argv[3], int(argv[4])
             r = stub.PlaceBid(p3.PlaceBidRequest(item_id=item_id, bidder_id=bidder_id, bid_amount=bid_amount))
             print({"ok": r.ok, "new_price": r.new_price, "pod": r.pod})
         elif cmd == "join-auction":
-            if len(sys.argv) < 4:
+            if len(argv) < 4:
                 print("join-auction <item_id> <bidder_id>")
-                sys.exit(1)
-            item_id, bidder_id = sys.argv[2], sys.argv[3]
+                return FAIL
+            item_id, bidder_id = argv[2], argv[3]
             try:
                 for update in stub.JoinAuction(p3.JoinAuctionRequest(item_id=item_id, bidder_id=bidder_id)):
                     print({
@@ -134,8 +136,19 @@ def main():
                 print("Left auction")
         else:
             print("Unknown command")
-            sys.exit(1)
+            # sys.exit(1)
+            return FAIL
 
+def repl():
+    while True:
+        execute_command(input("> ").split())
+
+def main():
+    # execute command from args, then just accept more commands from stdin
+    import time
+    time.sleep(5)
+    execute_command(sys.argv)
+    # repl()
 
 if __name__ == "__main__":
     main()

@@ -100,11 +100,6 @@ def running_storage_replicas():
     names = [line.strip() for line in result.stdout.splitlines() if line.strip()]
     return sorted(names)
 
-
-HOSTNAME = os.environ.get("HOSTNAME", "controller-node")
-PORT = os.environ.get("PORT", "50050")
-DATA = {}
-
 class Controller(p3_grpc.ControllerServiceServicer):
     def C_CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
         return p3.CreateItemResponse(
@@ -118,7 +113,87 @@ class Controller(p3_grpc.ControllerServiceServicer):
             item=None,
         )
 
+class Frontend(p3_grpc.FrontendServiceServicer):
+    global HOSTNAME
+    global STORAGE_TARGET
+    global auction_listeners
+    def CreateItem(self, request, context):
+        with grpc.insecure_channel(STORAGE_TARGET) as channel:
+            stub = p3_grpc.StorageServiceStub(channel)
+            response = stub.Put(request.item)
+        print(f"'{HOSTNAME}' CreateItem {response.item_id}", flush=True)
+        return response
+
+    def GetItem(self, request, context):
+        with grpc.insecure_channel(STORAGE_TARGET) as channel:
+            stub = p3_grpc.StorageServiceStub(channel)
+            response = stub.Get(request)
+        print(f"'{HOSTNAME}' GetItem {request.item_id}", flush=True)
+        return response
+
+    def SearchItems(self, request, context):
+        # For bare bones, just return all items, filter by keyword/category
+        # But storage doesn't have search, so get all? Wait, storage only has Get by id.
+        # For bare bones, assume we have a list or something. But to keep simple, return empty for now.
+        print(f"'{HOSTNAME}' SearchItems {request.keyword}", flush=True)
+        return p3.SearchItemsResponse(items=[], pod=HOSTNAME)
+
+    def UpdateItem(self, request, context):
+        with grpc.insecure_channel(STORAGE_TARGET) as channel:
+            stub = p3_grpc.StorageServiceStub(channel)
+            response = stub.Update(request)
+        print(f"'{HOSTNAME}' UpdateItem {request.item_id}", flush=True)
+        return response
+
+    def PlaceBid(self, request, context):
+        # Get current item
+        get_resp = self.GetItem(p3.GetItemRequest(item_id=request.item_id), context)
+        if not get_resp.found:
+            return p3.PlaceBidResponse(ok=False, new_price=0, pod=HOSTNAME)
+        item = get_resp.item
+        if request.bid_amount > item.current_price:
+            item.current_price = request.bid_amount
+            item.version += 1
+            update_req = p3.UpdateItemRequest(item_id=request.item_id, item=item)
+            update_resp = self.UpdateItem(update_req, context)
+            if update_resp.ok:
+                # Notify listeners
+                if request.item_id in auction_listeners:
+                    for queue in auction_listeners[request.item_id]:
+                        queue.put(p3.AuctionUpdate(
+                            item_id=request.item_id,
+                            current_price=item.current_price,
+                            bidder_id=request.bidder_id,
+                            status="active",
+                            timestamp=int(time.time())
+                        ))
+                return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=HOSTNAME)
+        return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=HOSTNAME)
+
+    def JoinAuction(self, request, context):
+        # For streaming, yield updates
+        # Bare bones: just yield initial, and wait for bids
+        # But to keep simple, yield nothing for now.
+        print(f"'{HOSTNAME}' JoinAuction {request.item_id}", flush=True)
+        # For bare bones, just return empty stream
+        return
+
 def serve():
+    global HOSTNAME
+    global STORAGE_PORT
+    global STORAGE_TARGET
+    global PORT
+    global DATA
+    global auction_listeners
+
+    HOSTNAME = os.environ.get("HOSTNAME", "controller-node")
+    PORT = os.environ.get("PORT", "50050")
+    DATA = {}
+    SERVICE_PORT = os.environ.get("SERVICE_PORT", "50150")
+    STORAGE_PORT = os.environ.get("STORAGE_PORT", "50250")
+    STORAGE_TARGET = f"replica-node-0:{STORAGE_PORT}"
+    auction_listeners = {}
+
     print("dummy controller")
 
     # parser = argparse.ArgumentParser(description="Simple storage replica controller")
@@ -136,17 +211,21 @@ def serve():
     # parser.add_argument("--timeout", type=int, default=2)
     # args = parser.parse_args()
 
-    import docker
-    docker_client = docker.from_env()
-    print(docker_client)
-    print(docker_client.containers.list())
-    print(docker_client.containers.get("p3-controller"))
+    def docker_sdk_test():
+        import docker
+        docker_client = docker.from_env()
+        print(docker_client)
+        print(docker_client.containers.list())
+        print(docker_client.containers.get("p3-controller"))
+    docker_sdk_test()
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     p3_grpc.add_ControllerServiceServicer_to_server(Controller(), server)
+    p3_grpc.add_FrontendServiceServicer_to_server(Frontend(), server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
     print(f"Controller '{HOSTNAME}' listening on {PORT}", flush=True)
+    print(f"Frontend '{HOSTNAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
     # ensure_network(args.network)

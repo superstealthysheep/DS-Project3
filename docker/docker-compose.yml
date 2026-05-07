@@ -19,6 +19,7 @@ x-all-nodes-shared-config: &shared-config
 
 x-service-nodes-shared-config: &service-config
   command: ["python", "-u", "service-node/service-node.py"]
+  profiles: [server]
 
 x-replica-nodes-config: &replica-config
   networks:
@@ -31,6 +32,19 @@ x-replica-nodes-config: &replica-config
     context: ..
     dockerfile: replica-node/Dockerfile
   command: ["python", "-u", "replica-node/replica-node.py"]
+  profiles: [server]
+
+x-client-nodes-config: &client-config
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+  networks:
+    - project3-net
+  working_dir: /app
+  image: project3_client_image:latest
+  pull_policy: never
+  command: ["python", "-u", "client/client.py", "create-item", "1", "2", "3", "4", "5", "6"]
+  profiles: [client]
 
 services:
   controller:
@@ -38,12 +52,13 @@ services:
     container_name: p3-controller
     hostname: controller
     environment:
-      PORT: 50500
+      PORT: 50050
 
     volumes:
       # mount docker socket so controller can spin up containers
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["python", "-u", "controller/controller.py"]
+    profiles: [server]
 
   service-node-0:
     <<: [*shared-config, *service-config] # note for yaml noobs like me: this is how you include keys from two or more referenced maps
@@ -66,6 +81,13 @@ services:
     hostname: replica-node-0
     environment:
       PORT: 50250
+
+  client-node-0:
+    <<: *client-config
+    container_name: p3-client-node-0
+    hostname: client-node-0
+    environment:
+      PORT: 50350
 
 networks:
   project3-net:

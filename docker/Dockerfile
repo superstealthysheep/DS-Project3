@@ -11,7 +11,10 @@ RUN uv pip install --system -r requirements.txt
 COPY ./proto /app/proto
 COPY ./controller ./app/controller
 COPY ./service-node ./app/service-node
+COPY ./client ./app/client
 COPY ./docker ./app/docker
 ENV PYTHONPATH=$PYTHONPATH:/app/proto/src
+
+ENV TARGET=controller:50050
 
 WORKDIR /app

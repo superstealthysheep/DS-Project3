@@ -29,6 +29,6 @@
   },
   "containerEnv": {
     "PYTHONPATH": "$PYTHONPATH:${containerWorkspaceFolder}:${containerWorkspaceFolder}/proto/src",
-    "TARGET" : "host.docker.internal:50051"
+    "TARGET" : "host.docker.internal:50050"
   }
 }
