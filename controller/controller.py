@@ -111,6 +111,11 @@ def running_replica_nodes():
     return sorted(names)
 
 class ControllerServicer(p3_grpc.ControllerServiceServicer):
+    @property
+    def controller(self) -> "Controller":
+        # this fn just for type annotations
+        return self._controller
+
     def C_CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
         return p3.CreateItemResponse(
             success=False,
@@ -133,12 +138,24 @@ class FrontendServicer(p3_grpc.FrontendServiceServicer):
     global CONTAINER_NAME
     global STORAGE_TARGET
     global auction_listeners
+    
+    @property
+    def controller(self) -> "Controller":
+        # this fn just for type annotations
+        return self._controller
 
     def CreateItem(self, request, context):
-        with grpc.insecure_channel(STORAGE_TARGET) as channel:
-            stub = p3_grpc.StorageServiceStub(channel)
-            response = stub.Put(request.item)
+        find_res = self.controller.find_service_node()
+        if not find_res['ok']: 
+            return p3.CreateItemResponse(ok=False)
+        service_node = self.controller.service_nodes[find_res['id']]
+        service_node['status'] = 'busy'
+        service_node_target = f"{service_node['address']}:{service_node['port']}"
+        with grpc.insecure_channel(service_node_target) as channel:
+            stub = p3_grpc.ServiceNodeServiceStub(service_node_target)
+            response = stub.S_CreateItem(request)
         print(f"'{CONTAINER_NAME}' CreateItem {response.item_id}", flush=True)
+        
         return response
 
     def GetItem(self, request, context):
@@ -207,9 +224,9 @@ class Controller:
         self.n_replicas = 5
 
         self.controller_servicer = ControllerServicer()
-        self.controller_servicer.controller = self
+        self.controller_servicer._controller = self
         self.frontend_servicer = FrontendServicer()
-        self.frontend_servicer.controller = self
+        self.frontend_servicer._controller = self
 
     def spawn_service_node(self, id: int):
         assert id not in self.service_nodes
@@ -250,6 +267,25 @@ class Controller:
             net_con.service_node_name(id)
         )
         container.stop()
+
+    def find_service_node(self, max_retries=5, retry_period=1):
+        """ returns id of a service node to whom we can assign some work """
+        import random
+        # super simple policy
+        
+        for _ in range(max_retries):
+            avail = self.find_all_non_busy()
+            if len(avail) != 0:
+                id = random.choice(avail.keys())
+                return {
+                    'ok': True,
+                    'id': id
+                }
+            time.sleep(retry_period)
+            self.autoscaling_policy(up=True, down=False)
+        return {
+            'ok': False,
+        }
 
     def spawn_replica_node(self, id: int):
         assert id not in self.replica_nodes
@@ -308,25 +344,33 @@ class Controller:
             if collection[sender_id]['status'] == "spawning":
                 collection[sender_id]['status'] = "ready"
 
-    def autoscaling_policy(self, desired_n_ready=1):
-        """ tries to ensure that there is one ready (or spawning) container at all times """
-        n_ready = sum(sn['status'] in {'ready', 'spawning'} for sn in self.service_nodes)
-        disparity = n_ready - desired_n_ready
+    def find_all_non_busy(self):
+        return {id:sn for id,sn in self.service_nodes if sn['status'] in {'ready', 'spawning'}}
+    
+    def count_non_busy(self):
+        return sum(sn['status'] in {'ready', 'spawning'} for sn in self.service_nodes.values())
 
-        # scale up
+    def scale_up(self, desired_change):
         id = 0
-        while disparity < 0 and id in range(50):
-            if disparity < 0 and id not in self.service_nodes:
+        for id in range(50):
+            if desired_change <= 0: break
+            if id not in self.service_nodes:
                 self.spawn_service_node(id)
-                disparity += 1
-            id += 1
+                desired_change -= 1
 
-        # scale down
+    def scale_down(self, desired_change):
         for id,service_node in self.service_nodes.items():
-            if not disparity > 0: break
+            if 0 <= desired_change: break
             if service_node['status'] == 'ready':
                 self.stop_service_node(id)
-                disparity -= 1
+                desired_change += 1
+
+    def autoscaling_policy(self, desired_n_ready=1, allow_up=True, allow_down=True):
+        """ tries to ensure that there is one ready (or spawning) container at all times """
+        desired_change = desired_n_ready - self.count_non_busy()
+
+        if allow_up: self.scale_up(desired_change)
+        if allow_down: self.scale_down(desired_change)
 
 def serve():
     global HOSTNAME
