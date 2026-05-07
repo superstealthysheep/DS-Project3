@@ -17,6 +17,23 @@ you@host_machine $ make purge-containers
 you@host_machine $ make up
 ```
 
+## High-level architecture
+
+We should merge these two code paths together
+
+### Docker compose version
+Controller node runs `ControllerService`
+Service nodes run `ServiceNodeService`
+Storage nodes run:
+- `StorageNodeService` (external API)
+- `ReplicaNodeService` (internal API for communication amongst themselves)
+
+### Non-Docker-compose version
+Run each of the following in their own terminal in the devcontainer:
+- `frontend/server.py`
+- `client/client.py`
+(this is not working for me rn. getting when client tries to connect to server to make rpc call? -William)
+
 ## Containers and their configs:
 - Host machine
 - Devcontainer
