@@ -1,0 +1,146 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package project3;
+
+enum ItemStatus {
+  ITEM_STATUS_SOLD = 0;
+  ITEM_STATUS_AVAILABLE = 1;
+}
+
+message Item {
+  string     item_id        = 1;
+  string     seller_id      = 2;
+  string     title          = 3;
+  string     category       = 4;
+  string     description    = 5;
+  int32      starting_price = 6;  // (price is in cents)
+  int32      current_price  = 7;
+  int32      quantity       = 8;
+  ItemStatus status         = 9;
+  string     version        = 10; // (string for now bc flexible)
+}
+
+message CreateItemRequest {
+  Item item = 1;
+}
+
+message CreateItemResponse {
+  bool   ok          = 1;
+  string item_id     = 2;
+  string new_version = 3;
+  string pod         = 4;
+}
+
+message GetItemRequest {
+  string item_id = 1;
+}
+
+message GetItemResponse {
+  bool   found = 1;
+  Item   item  = 2;
+  string pod   = 3;
+}
+
+message SearchItemsRequest {
+  string keyword  = 1;
+  string category = 2;
+}
+
+message SearchItemsResponse {
+  repeated Item items = 1;
+  string        pod   = 2;
+}
+
+message UpdateItemRequest {
+  string item_id       = 1;
+  string prev_version  = 2;
+  Item   new_value     = 3;
+}
+
+message UpdateItemResponse {
+  bool   ok          = 1;
+  string new_version = 2;
+  string pod         = 3;
+}
+
+message PlaceBidRequest {
+  string item_id    = 1;
+  string bidder_id  = 2;
+  double bid_amount = 3;
+}
+
+message PlaceBidResponse {
+  bool   ok        = 1;
+  double new_price = 2;
+  string pod       = 3;
+}
+
+message JoinAuctionRequest {
+  string item_id   = 1;
+  string bidder_id = 2;
+}
+
+message AuctionUpdate {
+  string item_id       = 1;
+  double current_price = 2;
+  string bidder_id     = 3;
+  string status        = 4;
+  int64  timestamp     = 5;
+}
+
+// message Client {
+// }
+
+message Heartbeat { // sent from node to controller
+  string node_id = 1;
+}
+message HeartbeatRequest {} // sent from controller to node if extra heartbeat desired
+
+service FrontendService {
+  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc GetItem(GetItemRequest) returns (GetItemResponse);
+  rpc SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  rpc PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  rpc JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+}
+
+service ControllerService {
+  // TODO: populate messages
+  rpc C_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc C_GetItem(GetItemRequest) returns (GetItemResponse);
+  rpc C_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  rpc C_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  rpc C_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+  rpc C_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  // rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
+}
+
+service ServiceNodeService {
+  // TODO: populate
+  rpc S_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc S_GetItem(GetItemRequest) returns (GetItemResponse);
+  rpc S_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  rpc S_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  rpc S_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+  rpc S_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  // rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+  // rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node
+}
+
+service StorageService { // public api of storage nodes
+  rpc Put(Item) returns (CreateItemResponse);
+  rpc Get(GetItemRequest) returns (GetItemResponse);
+  rpc Update(UpdateItemRequest) returns (UpdateItemResponse);
+  rpc HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+}
+
+service ReplicaNodeService { // api for storage nodes communicating amongst themselves
+  rpc R_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc R_Read(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc R_Write(google.protobuf.Empty) returns (Item);
+  // rpc R_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
+}
+

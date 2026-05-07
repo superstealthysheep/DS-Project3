@@ -1,10 +1,19 @@
+from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class ItemStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    ITEM_STATUS_SOLD: _ClassVar[ItemStatus]
+    ITEM_STATUS_AVAILABLE: _ClassVar[ItemStatus]
+ITEM_STATUS_SOLD: ItemStatus
+ITEM_STATUS_AVAILABLE: ItemStatus
 
 class Item(_message.Message):
     __slots__ = ("item_id", "seller_id", "title", "category", "description", "starting_price", "current_price", "quantity", "status", "version")
@@ -23,12 +32,12 @@ class Item(_message.Message):
     title: str
     category: str
     description: str
-    starting_price: float
-    current_price: float
+    starting_price: int
+    current_price: int
     quantity: int
-    status: str
-    version: int
-    def __init__(self, item_id: _Optional[str] = ..., seller_id: _Optional[str] = ..., title: _Optional[str] = ..., category: _Optional[str] = ..., description: _Optional[str] = ..., starting_price: _Optional[float] = ..., current_price: _Optional[float] = ..., quantity: _Optional[int] = ..., status: _Optional[str] = ..., version: _Optional[int] = ...) -> None: ...
+    status: ItemStatus
+    version: str
+    def __init__(self, item_id: _Optional[str] = ..., seller_id: _Optional[str] = ..., title: _Optional[str] = ..., category: _Optional[str] = ..., description: _Optional[str] = ..., starting_price: _Optional[int] = ..., current_price: _Optional[int] = ..., quantity: _Optional[int] = ..., status: _Optional[_Union[ItemStatus, str]] = ..., version: _Optional[str] = ...) -> None: ...
 
 class CreateItemRequest(_message.Message):
     __slots__ = ("item",)
@@ -37,14 +46,16 @@ class CreateItemRequest(_message.Message):
     def __init__(self, item: _Optional[_Union[Item, _Mapping]] = ...) -> None: ...
 
 class CreateItemResponse(_message.Message):
-    __slots__ = ("ok", "item_id", "pod")
+    __slots__ = ("ok", "item_id", "new_version", "pod")
     OK_FIELD_NUMBER: _ClassVar[int]
     ITEM_ID_FIELD_NUMBER: _ClassVar[int]
+    NEW_VERSION_FIELD_NUMBER: _ClassVar[int]
     POD_FIELD_NUMBER: _ClassVar[int]
     ok: bool
     item_id: str
+    new_version: str
     pod: str
-    def __init__(self, ok: bool = ..., item_id: _Optional[str] = ..., pod: _Optional[str] = ...) -> None: ...
+    def __init__(self, ok: bool = ..., item_id: _Optional[str] = ..., new_version: _Optional[str] = ..., pod: _Optional[str] = ...) -> None: ...
 
 class GetItemRequest(_message.Message):
     __slots__ = ("item_id",)
@@ -79,12 +90,14 @@ class SearchItemsResponse(_message.Message):
     def __init__(self, items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., pod: _Optional[str] = ...) -> None: ...
 
 class UpdateItemRequest(_message.Message):
-    __slots__ = ("item_id", "item")
+    __slots__ = ("item_id", "prev_version", "new_value")
     ITEM_ID_FIELD_NUMBER: _ClassVar[int]
-    ITEM_FIELD_NUMBER: _ClassVar[int]
+    PREV_VERSION_FIELD_NUMBER: _ClassVar[int]
+    NEW_VALUE_FIELD_NUMBER: _ClassVar[int]
     item_id: str
-    item: Item
-    def __init__(self, item_id: _Optional[str] = ..., item: _Optional[_Union[Item, _Mapping]] = ...) -> None: ...
+    prev_version: str
+    new_value: Item
+    def __init__(self, item_id: _Optional[str] = ..., prev_version: _Optional[str] = ..., new_value: _Optional[_Union[Item, _Mapping]] = ...) -> None: ...
 
 class UpdateItemResponse(_message.Message):
     __slots__ = ("ok", "new_version", "pod")
@@ -92,9 +105,9 @@ class UpdateItemResponse(_message.Message):
     NEW_VERSION_FIELD_NUMBER: _ClassVar[int]
     POD_FIELD_NUMBER: _ClassVar[int]
     ok: bool
-    new_version: int
+    new_version: str
     pod: str
-    def __init__(self, ok: bool = ..., new_version: _Optional[int] = ..., pod: _Optional[str] = ...) -> None: ...
+    def __init__(self, ok: bool = ..., new_version: _Optional[str] = ..., pod: _Optional[str] = ...) -> None: ...
 
 class PlaceBidRequest(_message.Message):
     __slots__ = ("item_id", "bidder_id", "bid_amount")
@@ -137,3 +150,13 @@ class AuctionUpdate(_message.Message):
     status: str
     timestamp: int
     def __init__(self, item_id: _Optional[str] = ..., current_price: _Optional[float] = ..., bidder_id: _Optional[str] = ..., status: _Optional[str] = ..., timestamp: _Optional[int] = ...) -> None: ...
+
+class Heartbeat(_message.Message):
+    __slots__ = ("node_id",)
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    node_id: str
+    def __init__(self, node_id: _Optional[str] = ...) -> None: ...
+
+class HeartbeatRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...

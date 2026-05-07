@@ -1,0 +1,72 @@
+name: project3-compose
+
+# note for noobs like me: top-level keys starting with `x-` are ignored by docker compose, so we can put our shared configs here
+x-all-nodes-shared-config: &shared-config
+  # volumes:
+  #   - type: bind
+  #     source: ./.uv_cache # TODO?: point to host system's global uv cache? this would be for container run time
+  #     target: /root/.cache/uv
+  # environment:
+  #   - UV_CACHE_DIR=/root/.cache/uv
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+  networks:
+    - project3-net
+  working_dir: /app
+  image: project3_image:latest # just label for the container; doesn't exist in any registry
+  pull_policy: never # thus don't pull
+
+x-service-nodes-shared-config: &service-config
+  command: ["python", "-u", "service-node/service-node.py"]
+
+x-replica-nodes-config: &replica-config
+  networks:
+    - project3-net
+  working_dir: /app
+  image: project3_replica_image:latest # just label for the container; doesn't exist in any registry
+  pull_policy: never # thus don't pull
+
+  build:
+    context: ..
+    dockerfile: replica-node/Dockerfile
+  command: ["python", "-u", "replica-node/replica-node.py"]
+
+services:
+  controller:
+    <<: *shared-config # copy in contents of the shared config
+    container_name: p3-controller
+    hostname: controller
+    environment:
+      PORT: 50500
+
+    volumes:
+      # mount docker socket so controller can spin up containers
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["python", "-u", "controller/controller.py"]
+
+  service-node-0:
+    <<: [*shared-config, *service-config] # note for yaml noobs like me: this is how you include keys from two or more referenced maps
+    container_name: p3-service-node-0
+    hostname: service-node-0
+    environment:
+      PORT: 50150
+  # service-node-1:
+  #   <<: [*shared-config, *service-config]
+  #   container_name: p3-service-node-1
+  #   hostname: service-node-1
+  # service-node-2:
+  #   <<: [*shared-config, *service-config]
+  #   container_name: p3-service-node-2
+  #   hostname: service-node-2
+
+  replica-node-0:
+    <<: *replica-config
+    container_name: p3-replica-node-0
+    hostname: replica-node-0
+    environment:
+      PORT: 50250
+
+networks:
+  project3-net:
+    name: project3-net
