@@ -2,6 +2,7 @@ import sys
 import os
 import grpc
 import json
+import time
 
 # Add proto/src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto', 'src'))
@@ -50,7 +51,9 @@ def execute_command(argv):
             _, _, seller_id, title, category, description, starting_price, quantity = argv
             starting_price = int(starting_price)
             quantity = int(quantity)
+            item_id = f"{seller_id}-{int(time.time()*1000)}"
             item = p3.Item(
+                item_id=item_id,
                 seller_id=seller_id,
                 title=title,
                 category=category,
@@ -59,7 +62,7 @@ def execute_command(argv):
                 current_price=starting_price,
                 quantity=quantity,
                 status=p3.ITEM_STATUS_AVAILABLE,
-                version="1",
+                version="0",
             )
             log.info(f"{item}", flush=True)
             req = p3.CreateItemRequest(item=item)
@@ -126,14 +129,15 @@ def execute_command(argv):
                 item.quantity = int(value)
             elif field == "status":
                 item.status = value
-            item.version += 1
-            r = stub.UpdateItem(p3.UpdateItemRequest(item_id=item_id, item=item))
+            r = stub.UpdateItem(
+                p3.UpdateItemRequest(item_id=item_id, prev_version=item.version, new_value=item)
+            )
             print({"ok": r.ok, "new_version": r.new_version, "pod": r.pod})
         elif cmd == "place-bid":
             if len(argv) < 5:
                 print("place-bid <item_id> <bidder_id> <bid_amount>")
                 return FAIL
-            item_id, bidder_id, bid_amount = argv[2], argv[3], int(argv[4])
+            item_id, bidder_id, bid_amount = argv[2], argv[3], float(argv[4])
             r = stub.PlaceBid(p3.PlaceBidRequest(item_id=item_id, bidder_id=bidder_id, bid_amount=bid_amount))
             print({"ok": r.ok, "new_price": r.new_price, "pod": r.pod})
         elif cmd == "join-auction":

@@ -14,109 +14,48 @@ import utils.config as config
 import utils.network_conventions as net_con
 
 
+def clone_item(src: p3.Item) -> p3.Item:
+    dst = p3.Item()
+    dst.CopyFrom(src)
+    return dst
+
+
 class ServiceNodeServicer(p3_grpc.ServiceNodeServiceServicer):
     def __init__(self, service_node: ServiceNode):
         assert service_node is not None
         self.service_node = service_node
 
-    # def CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
-    #     return p3.CreateItemResponse(
-    #         success=False,
-    #         item=None,
-    #     )
-
-    # def GetItem(self, request: p3.GetItemRequest, context: grpc.ServicerContext) -> p3.GetItemResponse:
-    #     return p3.GetItemResponse(
-    #         success=False,
-    #         item=None,
-    #     )
-
     def CreateItem(self, request: p3.CreateItemRequest, context) -> p3.CreateItemResponse:
-        i = 0
-        def handler(self, request, context, target):
-            nonlocal i
-            i += 1
-            with grpc.insecure_channel(target) as channel:
-                stub = p3_grpc.StorageServiceStub(channel)
-                response = stub.Put(request.item, timeout=config.STORAGE_REQUEST_TIMEOUT)
-            print(f"'{CONTAINER_NAME}' CreateItem {response.item_id}", flush=True)
-            return response
-
-        response = self.service_node.retry_wrapper(handler, self, request, context)
-        if response is None: 
-            response = p3.CreateItemResponse(ok=False)
-        return response
+        return self.service_node.quorum_put(request.item, pod=CONTAINER_NAME)
 
     def GetItem(self, request, context):
-        def handler(self, request, context, target):
-            with grpc.insecure_channel(target) as channel:
-                stub = p3_grpc.StorageServiceStub(channel)
-                response = stub.Get(request, timeout=config.STORAGE_REQUEST_TIMEOUT)
-            print(f"'{CONTAINER_NAME}' GetItem {request.item_id}", flush=True)
-            return response
-
-        response = self.service_node.retry_wrapper(handler, self, request, context)
-        if response is None: 
-            response = p3.GetItemResponse(ok=False)
-        return response
+        return self.service_node.quorum_get(request.item_id, pod=CONTAINER_NAME)
 
     def SearchItems(self, request, context):
-        def handler(self, request, context, target):
-            # For bare bones, just return all items, filter by keyword/category
-            # But storage doesn't have search, so get all? Wait, storage only has Get by id.
-            # For bare bones, assume we have a list or something. But to keep simple, return empty for now.
-            print(f"'{CONTAINER_NAME}' SearchItems {request.keyword}", flush=True)
-            return p3.SearchItemsResponse(items=[], pod=CONTAINER_NAME)
-
-        response = self.service_node.retry_wrapper(handler, self, request, context)
-        if response is None: 
-            response = p3.SearchItemsResponse(ok=False)
-        return response
+        return p3.SearchItemsResponse(items=[], pod=CONTAINER_NAME)
 
     def UpdateItem(self, request, context):
-        def handler(self, request, context, target):
-            with grpc.insecure_channel(target) as channel:
-                stub = p3_grpc.StorageServiceStub(channel)
-                response = stub.Update(request)
-            print(f"'{CONTAINER_NAME}' UpdateItem {request.item_id}", flush=True)
-            return response
-
-        response = self.service_node.retry_wrapper(handler, self, request, context)
-        if response is None: 
-            response = p3.GetItemResponse(ok=False)
-        return response
+        return self.service_node.quorum_update(request, pod=CONTAINER_NAME)
 
     def PlaceBid(self, request, context):
-        # Get current item
-        get_resp = self.GetItem(p3.GetItemRequest(item_id=request.item_id), context)
+        get_resp = self.service_node.quorum_get(request.item_id, pod=CONTAINER_NAME)
         if not get_resp.found:
             return p3.PlaceBidResponse(ok=False, new_price=0, pod=CONTAINER_NAME)
+
         item = get_resp.item
-        if request.bid_amount > item.current_price:
-            item.current_price = request.bid_amount
-            item.version += 1
-            update_req = p3.UpdateItemRequest(item_id=request.item_id, item=item)
-            update_resp = self.UpdateItem(update_req, context)
-            if update_resp.ok:
-                # Notify listeners
-                if request.item_id in self.service_node.auction_listeners:
-                    for queue in self.service_node.auction_listeners[request.item_id]:
-                        queue.put(p3.AuctionUpdate(
-                            item_id=request.item_id,
-                            current_price=item.current_price,
-                            bidder_id=request.bidder_id,
-                            status="active",
-                            timestamp=int(time.time())
-                        ))
-                return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=CONTAINER_NAME)
-        return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
+        if request.bid_amount <= item.current_price:
+            return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
+
+        item.current_price = int(request.bid_amount)
+        upd = p3.UpdateItemRequest(item_id=request.item_id, prev_version=item.version, new_value=item)
+        upd_resp = self.service_node.quorum_update(upd, pod=CONTAINER_NAME)
+        if not upd_resp.ok:
+            return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
+
+        return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=CONTAINER_NAME)
 
     def JoinAuction(self, request, context):
-        # For streaming, yield updates
-        # Bare bones: just yield initial, and wait for bids
-        # But to keep simple, yield nothing for now.
         print(f"'{CONTAINER_NAME}' JoinAuction {request.item_id}", flush=True)
-        # For bare bones, just return empty stream
         return
 
 class ServiceNode:
@@ -124,40 +63,106 @@ class ServiceNode:
         self.servicer = ServiceNodeServicer(self)
         self.auction_listeners = {}
 
-    def get_replica_node_full_address(self, rn_id: int):
-        # could be more complex for more complex networks,
-        # but here it suffices to just do
-        full_address = f"{net_con.replica_node_name(rn_id)}:{net_con.replica_node_port(rn_id)}"
-        return full_address
+    def all_replica_targets(self) -> list[str]:
+        return [
+            f"{net_con.replica_node_name(i)}:{net_con.replica_node_port(i)}"
+            for i in range(config.N_REPLICAS)
+        ]
 
-    def choose_replica_node(self) -> str:
-        import random
-        rn_id = random.randrange(config.N_REPLICAS)
-        full_address = self.get_replica_node_full_address(rn_id)
-        return full_address
+    def quorum_put(self, item: p3.Item, pod: str) -> p3.CreateItemResponse:
+        it = clone_item(item)
+        it.version = "0"
 
-    # def retry_iterator(self, max_retries, retry_period=1) -> typing.Iterator[str]:
-    #     for _ in range(max_retries):
-    #         yield self.choose_replica_node()
-    #         time.sleep(retry_period)
-
-    def retry_wrapper(self, handler, servicer, request, context, max_retries=5, retry_period=1):
-        """ returns None on failure, else returns wha handler did """
-        for i in range(max_retries):
-            target = self.choose_replica_node()           
-
-            try:
-                response = handler(servicer, request, context, target)
-            except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.UNAVAILABLE or e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+        deadline = time.time() + 10.0
+        acks = 0
+        while time.time() < deadline:
+            acks = 0
+            for target in self.all_replica_targets():
+                try:
+                    with grpc.insecure_channel(target) as channel:
+                        stub = p3_grpc.StorageServiceStub(channel)
+                        resp = stub.Put(it, timeout=config.STORAGE_REQUEST_TIMEOUT)
+                    if resp.ok:
+                        acks += 1
+                except grpc.RpcError:
                     pass
-                else:
-                    raise e
-            else:
-                return response
 
-            if i != max_retries - 1: time.sleep(retry_period)
-        return None
+            if acks >= config.WRITE_QUORUM_SIZE:
+                break
+            time.sleep(0.5)
+
+        ok = acks >= config.WRITE_QUORUM_SIZE
+        return p3.CreateItemResponse(ok=ok, item_id=it.item_id, new_version="0" if ok else "", pod=pod)
+
+    def quorum_get(self, item_id: str, pod: str) -> p3.GetItemResponse:
+        deadline = time.time() + 10.0
+        responses = 0
+        found_items: list[p3.Item] = []
+        while time.time() < deadline:
+            responses = 0
+            found_items = []
+            for target in self.all_replica_targets():
+                try:
+                    with grpc.insecure_channel(target) as channel:
+                        stub = p3_grpc.StorageServiceStub(channel)
+                        resp = stub.Get(p3.GetItemRequest(item_id=item_id), timeout=config.STORAGE_REQUEST_TIMEOUT)
+                    responses += 1
+                    if resp.found:
+                        found_items.append(resp.item)
+                except grpc.RpcError:
+                    pass
+
+            if responses >= config.READ_QUORUM_SIZE:
+                break
+            time.sleep(0.5)
+
+        if responses < config.READ_QUORUM_SIZE:
+            return p3.GetItemResponse(found=False, pod=pod)
+
+        if len(found_items) == 0:
+            return p3.GetItemResponse(found=False, pod=pod)
+
+        best = max(found_items, key=lambda x: int(x.version) if x.version.isdigit() else -1)
+        return p3.GetItemResponse(found=True, item=best, pod=pod)
+
+    def quorum_update(self, req: p3.UpdateItemRequest, pod: str) -> p3.UpdateItemResponse:
+        get_resp = self.quorum_get(req.item_id, pod=pod)
+        if not get_resp.found:
+            return p3.UpdateItemResponse(ok=False, pod=pod)
+
+        latest = get_resp.item
+        if req.prev_version != latest.version:
+            return p3.UpdateItemResponse(ok=False, pod=pod)
+
+        latest_v = int(latest.version) if latest.version.isdigit() else -1
+        if latest_v < 0:
+            return p3.UpdateItemResponse(ok=False, pod=pod)
+
+        new_v = latest_v + 1
+        new_item = clone_item(req.new_value)
+        new_item.version = str(new_v)
+        cas_req = p3.UpdateItemRequest(item_id=req.item_id, prev_version=str(latest_v), new_value=new_item)
+
+        deadline = time.time() + 10.0
+        acks = 0
+        while time.time() < deadline:
+            acks = 0
+            for target in self.all_replica_targets():
+                try:
+                    with grpc.insecure_channel(target) as channel:
+                        stub = p3_grpc.StorageServiceStub(channel)
+                        resp = stub.Update(cas_req, timeout=config.STORAGE_REQUEST_TIMEOUT)
+                    if resp.ok:
+                        acks += 1
+                except grpc.RpcError:
+                    pass
+
+            if acks >= config.WRITE_QUORUM_SIZE:
+                break
+            time.sleep(0.5)
+
+        ok = acks >= config.WRITE_QUORUM_SIZE
+        return p3.UpdateItemResponse(ok=ok, new_version=str(new_v) if ok else "", pod=pod)
 
 def serve():
     global HOSTNAME
@@ -171,15 +176,13 @@ def serve():
     service_node = ServiceNode()
     print("dummy service node")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    p3_grpc.add_ServiceNodeServiceServicer_to_server(service_node.servicer, server) # heeheeheehah
+    p3_grpc.add_ServiceNodeServiceServicer_to_server(service_node.servicer, server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
     log.info(f"Service node '{CONTAINER_NAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
 def ack_then_serve():
-    # for when spawned by controller, should send an "yes, i am alive" message to controller before beginning to serve
-
     my_id = int(os.environ.get("SERVICE_NODE_ID"))
     assert my_id is not None and my_id in range(50)
     my_container_name = net_con.service_node_name(my_id)

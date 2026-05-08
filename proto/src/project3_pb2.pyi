@@ -64,14 +64,16 @@ class GetItemRequest(_message.Message):
     def __init__(self, item_id: _Optional[str] = ...) -> None: ...
 
 class GetItemResponse(_message.Message):
-    __slots__ = ("found", "item", "pod")
+    __slots__ = ("ok", "found", "item", "pod")
+    OK_FIELD_NUMBER: _ClassVar[int]
     FOUND_FIELD_NUMBER: _ClassVar[int]
     ITEM_FIELD_NUMBER: _ClassVar[int]
     POD_FIELD_NUMBER: _ClassVar[int]
+    ok: bool
     found: bool
     item: Item
     pod: str
-    def __init__(self, found: bool = ..., item: _Optional[_Union[Item, _Mapping]] = ..., pod: _Optional[str] = ...) -> None: ...
+    def __init__(self, ok: bool = ..., found: bool = ..., item: _Optional[_Union[Item, _Mapping]] = ..., pod: _Optional[str] = ...) -> None: ...
 
 class SearchItemsRequest(_message.Message):
     __slots__ = ("keyword", "category")
@@ -82,12 +84,14 @@ class SearchItemsRequest(_message.Message):
     def __init__(self, keyword: _Optional[str] = ..., category: _Optional[str] = ...) -> None: ...
 
 class SearchItemsResponse(_message.Message):
-    __slots__ = ("items", "pod")
+    __slots__ = ("ok", "items", "pod")
+    OK_FIELD_NUMBER: _ClassVar[int]
     ITEMS_FIELD_NUMBER: _ClassVar[int]
     POD_FIELD_NUMBER: _ClassVar[int]
+    ok: bool
     items: _containers.RepeatedCompositeFieldContainer[Item]
     pod: str
-    def __init__(self, items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., pod: _Optional[str] = ...) -> None: ...
+    def __init__(self, ok: bool = ..., items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., pod: _Optional[str] = ...) -> None: ...
 
 class UpdateItemRequest(_message.Message):
     __slots__ = ("item_id", "prev_version", "new_value")

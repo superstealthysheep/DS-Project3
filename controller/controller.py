@@ -251,11 +251,12 @@ class Controller:
             image=self.service_node_image,
             detach=True,
             name=container_name,
-            ports={"80": sn_port},
+            ports={f"{sn_port}/tcp": sn_port},
             network=config.NETWORK,
             environment={
                 "SERVICE_NODE_ID": str(id),
-                "CONTROLLER_ADDRESSS": self.container_name,
+                "PORT": str(sn_port),
+                "CONTROLLER_ADDRESS": self.container_name,
                 "CONTROLLER_PORT": str(self.port),
             },
             labels={
@@ -324,11 +325,12 @@ class Controller:
             image=self.replica_node_image,
             detach=True,
             name=container_name,
-            ports={"80": rn_port},
+            ports={f"{rn_port}/tcp": rn_port},
             network=config.NETWORK,
             environment={
                 "REPLICA_NODE_ID": str(id),
-                "CONTROLLER_ADDRESSS": self.container_name,
+                "PORT": str(rn_port),
+                "CONTROLLER_ADDRESS": self.container_name,
                 "CONTROLLER_PORT": str(self.port),
             },
             labels={

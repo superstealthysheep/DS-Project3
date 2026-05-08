@@ -113,8 +113,6 @@ message Heartbeat { // sent from node to controller
 }
 message HeartbeatRequest {} // sent from controller to node if extra heartbeat desired
 
-mesage 
-
 service FrontendService {
   rpc FindServiceNode(FindServiceNodeRequest) returns (AddressResponse);
   // rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
