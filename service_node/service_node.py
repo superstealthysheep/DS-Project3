@@ -1,6 +1,8 @@
 from __future__ import annotations
 import typing
 import time
+import queue
+import threading
 
 import os
 from concurrent import futures
@@ -52,16 +54,57 @@ class ServiceNodeServicer(p3_grpc.ServiceNodeServiceServicer):
         if not upd_resp.ok:
             return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
 
+        # notify auction listeners
+        update = p3.AuctionUpdate(
+            item_id=request.item_id,
+            current_price=float(item.current_price),
+            bidder_id=request.bidder_id,
+            status="active",
+            timestamp=int(time.time()),
+        )
+        self.service_node.notify_listeners(request.item_id, update)
+
         return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=CONTAINER_NAME)
 
     def JoinAuction(self, request, context):
         print(f"'{CONTAINER_NAME}' JoinAuction {request.item_id}", flush=True)
-        return
+        item_id = request.item_id
+        q = queue.Queue()
+
+        self.service_node.add_listener(item_id, q)
+        try:
+            while context.is_active():
+                try:
+                    update = q.get(timeout=1.0)
+                    yield update
+                except queue.Empty:
+                    continue
+        finally:
+            self.service_node.remove_listener(item_id, q)
+
 
 class ServiceNode:
     def __init__(self):
         self.servicer = ServiceNodeServicer(self)
-        self.auction_listeners = {}
+        self.auction_listeners = {}  # item_id -> list of queues
+        self.listeners_lock = threading.Lock()
+
+    def add_listener(self, item_id: str, q: queue.Queue):
+        with self.listeners_lock:
+            if item_id not in self.auction_listeners:
+                self.auction_listeners[item_id] = []
+            self.auction_listeners[item_id].append(q)
+
+    def remove_listener(self, item_id: str, q: queue.Queue):
+        with self.listeners_lock:
+            if item_id in self.auction_listeners:
+                self.auction_listeners[item_id].remove(q)
+
+    def notify_listeners(self, item_id: str, update: p3.AuctionUpdate):
+        with self.listeners_lock:
+            listeners = list(self.auction_listeners.get(item_id, []))
+        for q in listeners:
+            q.put(update)
 
     def all_replica_targets(self) -> list[str]:
         return [
@@ -164,6 +207,7 @@ class ServiceNode:
         ok = acks >= config.WRITE_QUORUM_SIZE
         return p3.UpdateItemResponse(ok=ok, new_version=str(new_v) if ok else "", pod=pod)
 
+
 def serve():
     global HOSTNAME
     global CONTAINER_NAME
@@ -182,6 +226,7 @@ def serve():
     log.info(f"Service node '{CONTAINER_NAME}' listening on {PORT}", flush=True)
     server.wait_for_termination()
 
+
 def ack_then_serve():
     my_id = int(os.environ.get("SERVICE_NODE_ID"))
     assert my_id is not None and my_id in range(50)
@@ -195,6 +240,7 @@ def ack_then_serve():
         heartbeat_msg = p3.Heartbeat(node_id=my_container_name)
         stub.C_SendHeartbeat(heartbeat_msg)
     serve()
+
 
 if __name__ == "__main__":
     serve()
