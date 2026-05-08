@@ -151,6 +151,32 @@ class AuctionUpdate(_message.Message):
     timestamp: int
     def __init__(self, item_id: _Optional[str] = ..., current_price: _Optional[float] = ..., bidder_id: _Optional[str] = ..., status: _Optional[str] = ..., timestamp: _Optional[int] = ...) -> None: ...
 
+class AddressResponse(_message.Message):
+    __slots__ = ("ok", "address", "port")
+    OK_FIELD_NUMBER: _ClassVar[int]
+    ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    PORT_FIELD_NUMBER: _ClassVar[int]
+    ok: bool
+    address: str
+    port: str
+    def __init__(self, ok: bool = ..., address: _Optional[str] = ..., port: _Optional[str] = ...) -> None: ...
+
+class FindServiceNodeRequest(_message.Message):
+    __slots__ = ("create_item_request", "get_item_request", "search_items_request", "update_item_request", "place_bid_request", "join_auction_request")
+    CREATE_ITEM_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    GET_ITEM_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_ITEMS_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_ITEM_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    PLACE_BID_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    JOIN_AUCTION_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    create_item_request: CreateItemRequest
+    get_item_request: GetItemRequest
+    search_items_request: SearchItemsRequest
+    update_item_request: UpdateItemRequest
+    place_bid_request: PlaceBidRequest
+    join_auction_request: JoinAuctionRequest
+    def __init__(self, create_item_request: _Optional[_Union[CreateItemRequest, _Mapping]] = ..., get_item_request: _Optional[_Union[GetItemRequest, _Mapping]] = ..., search_items_request: _Optional[_Union[SearchItemsRequest, _Mapping]] = ..., update_item_request: _Optional[_Union[UpdateItemRequest, _Mapping]] = ..., place_bid_request: _Optional[_Union[PlaceBidRequest, _Mapping]] = ..., join_auction_request: _Optional[_Union[JoinAuctionRequest, _Mapping]] = ...) -> None: ...
+
 class Heartbeat(_message.Message):
     __slots__ = ("node_id",)
     NODE_ID_FIELD_NUMBER: _ClassVar[int]

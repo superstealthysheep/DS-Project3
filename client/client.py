@@ -18,7 +18,9 @@ import utils.network_conventions as net_con
 TARGET = os.environ.get("TARGET", f"{net_con.CONTROLLER_NODE_NAME}:{net_con.CONTROLLER_NODE_BASE_PORT}")
 
 def execute_command(argv):
-    FAIL = 1
+    log.info("attempting command:", *argv)
+
+    FAIL = "FAIL"
     if len(argv) < 2:
         print("Commands:")
         print("create-item <seller_id> <title> <category> <description> <starting_price> <quantity>")
@@ -30,9 +32,16 @@ def execute_command(argv):
         print("interactive")
         return FAIL
 
-    cmd = argv[1].lower()
     with grpc.insecure_channel(TARGET) as channel:
         stub = p3_grpc.FrontendServiceStub(channel)
+        addr_resp = stub.FindServiceNode(p3.FindServiceNodeRequest())
+        if not addr_resp.ok:
+            return FAIL
+        service_node_target = f"{addr_resp.address}:{addr_resp.port}"
+
+    cmd = argv[1].lower()
+    with grpc.insecure_channel(service_node_target) as channel:
+        stub = p3_grpc.ServiceNodeServiceStub(channel)
         print(f"{stub.__dict__=}")
         if cmd == "create-item":
             if len(argv) < 8:
@@ -52,7 +61,11 @@ def execute_command(argv):
                 status=p3.ITEM_STATUS_AVAILABLE,
                 version="1",
             )
-            r = stub.CreateItem(p3.CreateItemRequest(item=item))
+            log.info(f"{item}", flush=True)
+            req = p3.CreateItemRequest(item=item)
+            log.info(req, flush=True)
+            r = stub.CreateItem(req)
+            log.info(r, flush=True)
             print({"ok": r.ok, "item_id": r.item_id, "pod": r.pod})
         elif cmd == "get-item":
             if len(argv) < 3:

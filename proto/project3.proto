@@ -37,9 +37,10 @@ message GetItemRequest {
 }
 
 message GetItemResponse {
-  bool   found = 1;
-  Item   item  = 2;
-  string pod   = 3;
+  bool   ok    = 1;
+  bool   found = 2;
+  Item   item  = 3;
+  string pod   = 4;
 }
 
 message SearchItemsRequest {
@@ -48,8 +49,9 @@ message SearchItemsRequest {
 }
 
 message SearchItemsResponse {
-  repeated Item items = 1;
-  string        pod   = 2;
+  bool          ok    = 1;
+  repeated Item items = 2;
+  string        pod   = 3;
 }
 
 message UpdateItemRequest {
@@ -89,42 +91,60 @@ message AuctionUpdate {
   int64  timestamp     = 5;
 }
 
-// message Client {
-// }
+message AddressResponse {
+  bool ok = 1;
+  string address = 2;
+  string port = 3;
+}
+
+message FindServiceNodeRequest {
+  oneof request { // (is optional)
+    CreateItemRequest create_item_request = 1;
+    GetItemRequest get_item_request = 2;
+    SearchItemsRequest search_items_request = 3;
+    UpdateItemRequest update_item_request = 4;
+    PlaceBidRequest place_bid_request = 5;
+    JoinAuctionRequest join_auction_request = 6;
+  }
+}
 
 message Heartbeat { // sent from node to controller
   string node_id = 1;
 }
 message HeartbeatRequest {} // sent from controller to node if extra heartbeat desired
 
+mesage 
+
 service FrontendService {
-  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
-  rpc GetItem(GetItemRequest) returns (GetItemResponse);
-  rpc SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
-  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
-  rpc PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
-  rpc JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+  rpc FindServiceNode(FindServiceNodeRequest) returns (AddressResponse);
+  // rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  // rpc GetItem(GetItemRequest) returns (GetItemResponse);
+  // rpc SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  // rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  // rpc PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  // rpc JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
 }
 
 service ControllerService {
-  rpc C_CreateItem(CreateItemRequest) returns (CreateItemResponse);
-  rpc C_GetItem(GetItemRequest) returns (GetItemResponse);
-  rpc C_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
-  rpc C_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
-  rpc C_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
-  rpc C_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  // rpc FindStorageNode(FindStorageNodeRequest) returns (AddressResponse);
+  // rpc C_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  // rpc C_GetItem(GetItemRequest) returns (GetItemResponse);
+  // rpc C_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  // rpc C_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  // rpc C_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+  // rpc C_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
   // TODO: populate messages
   // rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc C_SendHeartbeat(Heartbeat) returns (google.protobuf.Empty); // (how callee sends a heartbeat message to the controller)
 }
 
 service ServiceNodeService {
-  rpc S_CreateItem(CreateItemRequest) returns (CreateItemResponse);
-  rpc S_GetItem(GetItemRequest) returns (GetItemResponse);
-  rpc S_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
-  rpc S_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
-  rpc S_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
-  rpc S_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc GetItem(GetItemRequest) returns (GetItemResponse);
+  rpc SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  rpc PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+  rpc JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
   // TODO: populate
   // rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
   // rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node
@@ -138,9 +158,9 @@ service StorageService { // public api of storage nodes
 }
 
 service ReplicaNodeService { // api for storage nodes communicating amongst themselves
-  rpc R_CreateItem(CreateItemRequest) returns (CreateItemResponse);
-  rpc R_Read(google.protobuf.Empty) returns (google.protobuf.Empty);
-  rpc R_Write(google.protobuf.Empty) returns (Item);
+  rpc R_Put(Item) returns (CreateItemResponse);
+  rpc R_Get(GetItemRequest) returns (GetItemResponse);
+  rpc R_Update(UpdateItemRequest) returns (UpdateItemResponse);
   // rpc R_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
 }
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import subprocess
 import time
@@ -12,6 +14,7 @@ from concurrent import futures
 
 import docker
 import utils.config as config
+import utils.log_util as log
 import utils.network_conventions as net_con
 
 def run_cmd(cmd, check=True, verbose=True):
@@ -111,10 +114,9 @@ def running_replica_nodes():
     return sorted(names)
 
 class ControllerServicer(p3_grpc.ControllerServiceServicer):
-    @property
-    def controller(self) -> "Controller":
-        # this fn just for type annotations
-        return self._controller
+    def __init__(self, controller: Controller):
+        assert controller is not None
+        self.controller = controller
 
     def C_CreateItem(self, request: p3.CreateItemRequest, context: grpc.ServicerContext) -> p3.CreateItemResponse:
         return p3.CreateItemResponse(
@@ -138,79 +140,93 @@ class FrontendServicer(p3_grpc.FrontendServiceServicer):
     global CONTAINER_NAME
     global STORAGE_TARGET
     global auction_listeners
-    
-    @property
-    def controller(self) -> "Controller":
-        # this fn just for type annotations
-        return self._controller
 
-    def CreateItem(self, request, context):
+    def __init__(self, controller: Controller):
+        assert controller is not None
+        self.controller = controller
+    
+    # def CreateItem(self, request, context):
+    #     find_res = self.controller.find_service_node()
+    #     if not find_res['ok']: 
+    #         return p3.CreateItemResponse(ok=False)
+    #     service_node = self.controller.service_nodes[find_res['id']]
+    #     service_node['status'] = 'busy'
+    #     service_node_target = f"{service_node['address']}:{service_node['port']}"
+    #     with grpc.insecure_channel(service_node_target) as channel:
+    #         stub = p3_grpc.ServiceNodeServiceStub(service_node_target)
+    #         response = stub.S_CreateItem(request)
+    #     print(f"'{CONTAINER_NAME}' CreateItem {response.item_id}", flush=True)
+        
+    #     return response
+
+    # def GetItem(self, request, context):
+    #     with grpc.insecure_channel(STORAGE_TARGET) as channel:
+    #         stub = p3_grpc.StorageServiceStub(channel)
+    #         response = stub.Get(request)
+    #     print(f"'{CONTAINER_NAME}' GetItem {request.item_id}", flush=True)
+    #     return response
+
+    # def SearchItems(self, request, context):
+    #     # For bare bones, just return all items, filter by keyword/category
+    #     # But storage doesn't have search, so get all? Wait, storage only has Get by id.
+    #     # For bare bones, assume we have a list or something. But to keep simple, return empty for now.
+    #     print(f"'{CONTAINER_NAME}' SearchItems {request.keyword}", flush=True)
+    #     return p3.SearchItemsResponse(items=[], pod=CONTAINER_NAME)
+
+    # def UpdateItem(self, request, context):
+    #     with grpc.insecure_channel(STORAGE_TARGET) as channel:
+    #         stub = p3_grpc.StorageServiceStub(channel)
+    #         response = stub.Update(request)
+    #     print(f"'{CONTAINER_NAME}' UpdateItem {request.item_id}", flush=True)
+    #     return response
+
+    # def PlaceBid(self, request, context):
+    #     # Get current item
+    #     get_resp = self.GetItem(p3.GetItemRequest(item_id=request.item_id), context)
+    #     if not get_resp.found:
+    #         return p3.PlaceBidResponse(ok=False, new_price=0, pod=CONTAINER_NAME)
+    #     item = get_resp.item
+    #     if request.bid_amount > item.current_price:
+    #         item.current_price = request.bid_amount
+    #         item.version += 1
+    #         update_req = p3.UpdateItemRequest(item_id=request.item_id, item=item)
+    #         update_resp = self.UpdateItem(update_req, context)
+    #         if update_resp.ok:
+    #             # Notify listeners
+    #             if request.item_id in auction_listeners:
+    #                 for queue in auction_listeners[request.item_id]:
+    #                     queue.put(p3.AuctionUpdate(
+    #                         item_id=request.item_id,
+    #                         current_price=item.current_price,
+    #                         bidder_id=request.bidder_id,
+    #                         status="active",
+    #                         timestamp=int(time.time())
+    #                     ))
+    #             return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=CONTAINER_NAME)
+    #     return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
+
+    # def JoinAuction(self, request, context):
+    #     # For streaming, yield updates
+    #     # Bare bones: just yield initial, and wait for bids
+    #     # But to keep simple, yield nothing for now.
+    #     print(f"'{CONTAINER_NAME}' JoinAuction {request.item_id}", flush=True)
+    #     # For bare bones, just return empty stream
+    #     return
+    def FindServiceNode(self, request: p3.FindServiceNodeRequest, context: grpc.ServicerContext) -> p3.AddressResponse:
         find_res = self.controller.find_service_node()
         if not find_res['ok']: 
-            return p3.CreateItemResponse(ok=False)
-        service_node = self.controller.service_nodes[find_res['id']]
-        service_node['status'] = 'busy'
-        service_node_target = f"{service_node['address']}:{service_node['port']}"
-        with grpc.insecure_channel(service_node_target) as channel:
-            stub = p3_grpc.ServiceNodeServiceStub(service_node_target)
-            response = stub.S_CreateItem(request)
-        print(f"'{CONTAINER_NAME}' CreateItem {response.item_id}", flush=True)
-        
-        return response
+            return p3.AddressResponse(ok=False)
+        id = find_res['id']
 
-    def GetItem(self, request, context):
-        with grpc.insecure_channel(STORAGE_TARGET) as channel:
-            stub = p3_grpc.StorageServiceStub(channel)
-            response = stub.Get(request)
-        print(f"'{CONTAINER_NAME}' GetItem {request.item_id}", flush=True)
-        return response
+        addr_res = self.controller.get_service_node_address(id)
+        if not addr_res['ok']:
+            return p3.AddressResponse(ok=False)
 
-    def SearchItems(self, request, context):
-        # For bare bones, just return all items, filter by keyword/category
-        # But storage doesn't have search, so get all? Wait, storage only has Get by id.
-        # For bare bones, assume we have a list or something. But to keep simple, return empty for now.
-        print(f"'{CONTAINER_NAME}' SearchItems {request.keyword}", flush=True)
-        return p3.SearchItemsResponse(items=[], pod=CONTAINER_NAME)
-
-    def UpdateItem(self, request, context):
-        with grpc.insecure_channel(STORAGE_TARGET) as channel:
-            stub = p3_grpc.StorageServiceStub(channel)
-            response = stub.Update(request)
-        print(f"'{CONTAINER_NAME}' UpdateItem {request.item_id}", flush=True)
-        return response
-
-    def PlaceBid(self, request, context):
-        # Get current item
-        get_resp = self.GetItem(p3.GetItemRequest(item_id=request.item_id), context)
-        if not get_resp.found:
-            return p3.PlaceBidResponse(ok=False, new_price=0, pod=CONTAINER_NAME)
-        item = get_resp.item
-        if request.bid_amount > item.current_price:
-            item.current_price = request.bid_amount
-            item.version += 1
-            update_req = p3.UpdateItemRequest(item_id=request.item_id, item=item)
-            update_resp = self.UpdateItem(update_req, context)
-            if update_resp.ok:
-                # Notify listeners
-                if request.item_id in auction_listeners:
-                    for queue in auction_listeners[request.item_id]:
-                        queue.put(p3.AuctionUpdate(
-                            item_id=request.item_id,
-                            current_price=item.current_price,
-                            bidder_id=request.bidder_id,
-                            status="active",
-                            timestamp=int(time.time())
-                        ))
-                return p3.PlaceBidResponse(ok=True, new_price=item.current_price, pod=CONTAINER_NAME)
-        return p3.PlaceBidResponse(ok=False, new_price=item.current_price, pod=CONTAINER_NAME)
-
-    def JoinAuction(self, request, context):
-        # For streaming, yield updates
-        # Bare bones: just yield initial, and wait for bids
-        # But to keep simple, yield nothing for now.
-        print(f"'{CONTAINER_NAME}' JoinAuction {request.item_id}", flush=True)
-        # For bare bones, just return empty stream
-        return
+        return p3.AddressResponse(
+            ok=True,
+            address=addr_res['address'],
+            port=str(addr_res['port'])
+        )
 
 class Controller:
     def __init__(self):
@@ -223,10 +239,8 @@ class Controller:
         self.port = net_con.CONTROLLER_NODE_BASE_PORT
         self.n_replicas = 5
 
-        self.controller_servicer = ControllerServicer()
-        self.controller_servicer._controller = self
-        self.frontend_servicer = FrontendServicer()
-        self.frontend_servicer._controller = self
+        self.controller_servicer = ControllerServicer(controller=self)
+        self.frontend_servicer = FrontendServicer(controller=self)
 
     def spawn_service_node(self, id: int):
         assert id not in self.service_nodes
@@ -272,11 +286,12 @@ class Controller:
         """ returns id of a service node to whom we can assign some work """
         import random
         # super simple policy
+        # could be optimized (e.g. shuffle keys, then return first result)
         
         for _ in range(max_retries):
             avail = self.find_all_non_busy()
             if len(avail) != 0:
-                id = random.choice(avail.keys())
+                id = random.choice(list(avail.keys()))
                 return {
                     'ok': True,
                     'id': id
@@ -286,6 +301,18 @@ class Controller:
         return {
             'ok': False,
         }
+    
+    def get_service_node_address(self, id: int):
+        # could technically do via `net_con.service_node_name()`, but that feels (not naturalistic)/(limited to contrived pre-defined network setup)
+        try:
+            sn = self.service_nodes[id]
+            return {
+                'ok': True,
+                'address': sn['address'],
+                'port': sn['port'],
+            }
+        except:
+            return {'ok': False}
 
     def spawn_replica_node(self, id: int):
         assert id not in self.replica_nodes
@@ -345,7 +372,7 @@ class Controller:
                 collection[sender_id]['status'] = "ready"
 
     def find_all_non_busy(self):
-        return {id:sn for id,sn in self.service_nodes if sn['status'] in {'ready', 'spawning'}}
+        return {id:sn for id,sn in self.service_nodes.items() if sn['status'] in {'ready', 'spawning'}}
     
     def count_non_busy(self):
         return sum(sn['status'] in {'ready', 'spawning'} for sn in self.service_nodes.values())
@@ -406,13 +433,9 @@ def serve():
 
     controller.autoscaling_policy() # TODO: call this intermittently?
     
-    import time
-    time.sleep(15)
-    print(running_service_nodes())
-    for i in range(5):
-        controller.stop_service_node(i)
-    time.sleep(5)
+    print("Service nodes currently active:", running_service_nodes())
 
+    log.info("Server now just waiting for requests! (tests likely done)")
     server.wait_for_termination()
 
     # ensure_network(args.network)

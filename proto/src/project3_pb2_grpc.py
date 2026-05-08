@@ -35,73 +35,24 @@ class FrontendServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CreateItem = channel.unary_unary(
-                '/project3.FrontendService/CreateItem',
-                request_serializer=project3__pb2.CreateItemRequest.SerializeToString,
-                response_deserializer=project3__pb2.CreateItemResponse.FromString,
-                _registered_method=True)
-        self.GetItem = channel.unary_unary(
-                '/project3.FrontendService/GetItem',
-                request_serializer=project3__pb2.GetItemRequest.SerializeToString,
-                response_deserializer=project3__pb2.GetItemResponse.FromString,
-                _registered_method=True)
-        self.SearchItems = channel.unary_unary(
-                '/project3.FrontendService/SearchItems',
-                request_serializer=project3__pb2.SearchItemsRequest.SerializeToString,
-                response_deserializer=project3__pb2.SearchItemsResponse.FromString,
-                _registered_method=True)
-        self.UpdateItem = channel.unary_unary(
-                '/project3.FrontendService/UpdateItem',
-                request_serializer=project3__pb2.UpdateItemRequest.SerializeToString,
-                response_deserializer=project3__pb2.UpdateItemResponse.FromString,
-                _registered_method=True)
-        self.PlaceBid = channel.unary_unary(
-                '/project3.FrontendService/PlaceBid',
-                request_serializer=project3__pb2.PlaceBidRequest.SerializeToString,
-                response_deserializer=project3__pb2.PlaceBidResponse.FromString,
-                _registered_method=True)
-        self.JoinAuction = channel.unary_stream(
-                '/project3.FrontendService/JoinAuction',
-                request_serializer=project3__pb2.JoinAuctionRequest.SerializeToString,
-                response_deserializer=project3__pb2.AuctionUpdate.FromString,
+        self.FindServiceNode = channel.unary_unary(
+                '/project3.FrontendService/FindServiceNode',
+                request_serializer=project3__pb2.FindServiceNodeRequest.SerializeToString,
+                response_deserializer=project3__pb2.AddressResponse.FromString,
                 _registered_method=True)
 
 
 class FrontendServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CreateItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def SearchItems(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def UpdateItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def PlaceBid(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def JoinAuction(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def FindServiceNode(self, request, context):
+        """rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+        rpc GetItem(GetItemRequest) returns (GetItemResponse);
+        rpc SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+        rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+        rpc PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+        rpc JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -109,35 +60,10 @@ class FrontendServiceServicer(object):
 
 def add_FrontendServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CreateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateItem,
-                    request_deserializer=project3__pb2.CreateItemRequest.FromString,
-                    response_serializer=project3__pb2.CreateItemResponse.SerializeToString,
-            ),
-            'GetItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetItem,
-                    request_deserializer=project3__pb2.GetItemRequest.FromString,
-                    response_serializer=project3__pb2.GetItemResponse.SerializeToString,
-            ),
-            'SearchItems': grpc.unary_unary_rpc_method_handler(
-                    servicer.SearchItems,
-                    request_deserializer=project3__pb2.SearchItemsRequest.FromString,
-                    response_serializer=project3__pb2.SearchItemsResponse.SerializeToString,
-            ),
-            'UpdateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateItem,
-                    request_deserializer=project3__pb2.UpdateItemRequest.FromString,
-                    response_serializer=project3__pb2.UpdateItemResponse.SerializeToString,
-            ),
-            'PlaceBid': grpc.unary_unary_rpc_method_handler(
-                    servicer.PlaceBid,
-                    request_deserializer=project3__pb2.PlaceBidRequest.FromString,
-                    response_serializer=project3__pb2.PlaceBidResponse.SerializeToString,
-            ),
-            'JoinAuction': grpc.unary_stream_rpc_method_handler(
-                    servicer.JoinAuction,
-                    request_deserializer=project3__pb2.JoinAuctionRequest.FromString,
-                    response_serializer=project3__pb2.AuctionUpdate.SerializeToString,
+            'FindServiceNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.FindServiceNode,
+                    request_deserializer=project3__pb2.FindServiceNodeRequest.FromString,
+                    response_serializer=project3__pb2.AddressResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -151,7 +77,7 @@ class FrontendService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CreateItem(request,
+    def FindServiceNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -164,144 +90,9 @@ class FrontendService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.FrontendService/CreateItem',
-            project3__pb2.CreateItemRequest.SerializeToString,
-            project3__pb2.CreateItemResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def GetItem(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.FrontendService/GetItem',
-            project3__pb2.GetItemRequest.SerializeToString,
-            project3__pb2.GetItemResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def SearchItems(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.FrontendService/SearchItems',
-            project3__pb2.SearchItemsRequest.SerializeToString,
-            project3__pb2.SearchItemsResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def UpdateItem(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.FrontendService/UpdateItem',
-            project3__pb2.UpdateItemRequest.SerializeToString,
-            project3__pb2.UpdateItemResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def PlaceBid(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.FrontendService/PlaceBid',
-            project3__pb2.PlaceBidRequest.SerializeToString,
-            project3__pb2.PlaceBidResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def JoinAuction(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(
-            request,
-            target,
-            '/project3.FrontendService/JoinAuction',
-            project3__pb2.JoinAuctionRequest.SerializeToString,
-            project3__pb2.AuctionUpdate.FromString,
+            '/project3.FrontendService/FindServiceNode',
+            project3__pb2.FindServiceNodeRequest.SerializeToString,
+            project3__pb2.AddressResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -322,36 +113,6 @@ class ControllerServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.C_CreateItem = channel.unary_unary(
-                '/project3.ControllerService/C_CreateItem',
-                request_serializer=project3__pb2.CreateItemRequest.SerializeToString,
-                response_deserializer=project3__pb2.CreateItemResponse.FromString,
-                _registered_method=True)
-        self.C_GetItem = channel.unary_unary(
-                '/project3.ControllerService/C_GetItem',
-                request_serializer=project3__pb2.GetItemRequest.SerializeToString,
-                response_deserializer=project3__pb2.GetItemResponse.FromString,
-                _registered_method=True)
-        self.C_SearchItems = channel.unary_unary(
-                '/project3.ControllerService/C_SearchItems',
-                request_serializer=project3__pb2.SearchItemsRequest.SerializeToString,
-                response_deserializer=project3__pb2.SearchItemsResponse.FromString,
-                _registered_method=True)
-        self.C_UpdateItem = channel.unary_unary(
-                '/project3.ControllerService/C_UpdateItem',
-                request_serializer=project3__pb2.UpdateItemRequest.SerializeToString,
-                response_deserializer=project3__pb2.UpdateItemResponse.FromString,
-                _registered_method=True)
-        self.C_JoinAuction = channel.unary_stream(
-                '/project3.ControllerService/C_JoinAuction',
-                request_serializer=project3__pb2.JoinAuctionRequest.SerializeToString,
-                response_deserializer=project3__pb2.AuctionUpdate.FromString,
-                _registered_method=True)
-        self.C_PlaceBid = channel.unary_unary(
-                '/project3.ControllerService/C_PlaceBid',
-                request_serializer=project3__pb2.PlaceBidRequest.SerializeToString,
-                response_deserializer=project3__pb2.PlaceBidResponse.FromString,
-                _registered_method=True)
         self.C_SendHeartbeat = channel.unary_unary(
                 '/project3.ControllerService/C_SendHeartbeat',
                 request_serializer=project3__pb2.Heartbeat.SerializeToString,
@@ -362,44 +123,15 @@ class ControllerServiceStub(object):
 class ControllerServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def C_CreateItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def C_GetItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def C_SearchItems(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def C_UpdateItem(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def C_JoinAuction(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def C_PlaceBid(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def C_SendHeartbeat(self, request, context):
-        """TODO: populate messages
+        """rpc FindStorageNode(FindStorageNodeRequest) returns (AddressResponse);
+        rpc C_CreateItem(CreateItemRequest) returns (CreateItemResponse);
+        rpc C_GetItem(GetItemRequest) returns (GetItemResponse);
+        rpc C_SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+        rpc C_UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+        rpc C_JoinAuction(JoinAuctionRequest) returns (stream AuctionUpdate);
+        rpc C_PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+        TODO: populate messages
         rpc C_CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty);
         (how callee sends a heartbeat message to the controller)
         """
@@ -410,36 +142,6 @@ class ControllerServiceServicer(object):
 
 def add_ControllerServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'C_CreateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.C_CreateItem,
-                    request_deserializer=project3__pb2.CreateItemRequest.FromString,
-                    response_serializer=project3__pb2.CreateItemResponse.SerializeToString,
-            ),
-            'C_GetItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.C_GetItem,
-                    request_deserializer=project3__pb2.GetItemRequest.FromString,
-                    response_serializer=project3__pb2.GetItemResponse.SerializeToString,
-            ),
-            'C_SearchItems': grpc.unary_unary_rpc_method_handler(
-                    servicer.C_SearchItems,
-                    request_deserializer=project3__pb2.SearchItemsRequest.FromString,
-                    response_serializer=project3__pb2.SearchItemsResponse.SerializeToString,
-            ),
-            'C_UpdateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.C_UpdateItem,
-                    request_deserializer=project3__pb2.UpdateItemRequest.FromString,
-                    response_serializer=project3__pb2.UpdateItemResponse.SerializeToString,
-            ),
-            'C_JoinAuction': grpc.unary_stream_rpc_method_handler(
-                    servicer.C_JoinAuction,
-                    request_deserializer=project3__pb2.JoinAuctionRequest.FromString,
-                    response_serializer=project3__pb2.AuctionUpdate.SerializeToString,
-            ),
-            'C_PlaceBid': grpc.unary_unary_rpc_method_handler(
-                    servicer.C_PlaceBid,
-                    request_deserializer=project3__pb2.PlaceBidRequest.FromString,
-                    response_serializer=project3__pb2.PlaceBidResponse.SerializeToString,
-            ),
             'C_SendHeartbeat': grpc.unary_unary_rpc_method_handler(
                     servicer.C_SendHeartbeat,
                     request_deserializer=project3__pb2.Heartbeat.FromString,
@@ -455,168 +157,6 @@ def add_ControllerServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class ControllerService(object):
     """Missing associated documentation comment in .proto file."""
-
-    @staticmethod
-    def C_CreateItem(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/C_CreateItem',
-            project3__pb2.CreateItemRequest.SerializeToString,
-            project3__pb2.CreateItemResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def C_GetItem(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/C_GetItem',
-            project3__pb2.GetItemRequest.SerializeToString,
-            project3__pb2.GetItemResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def C_SearchItems(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/C_SearchItems',
-            project3__pb2.SearchItemsRequest.SerializeToString,
-            project3__pb2.SearchItemsResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def C_UpdateItem(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/C_UpdateItem',
-            project3__pb2.UpdateItemRequest.SerializeToString,
-            project3__pb2.UpdateItemResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def C_JoinAuction(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(
-            request,
-            target,
-            '/project3.ControllerService/C_JoinAuction',
-            project3__pb2.JoinAuctionRequest.SerializeToString,
-            project3__pb2.AuctionUpdate.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def C_PlaceBid(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/project3.ControllerService/C_PlaceBid',
-            project3__pb2.PlaceBidRequest.SerializeToString,
-            project3__pb2.PlaceBidResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
 
     @staticmethod
     def C_SendHeartbeat(request,
@@ -655,72 +195,72 @@ class ServiceNodeServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.S_CreateItem = channel.unary_unary(
-                '/project3.ServiceNodeService/S_CreateItem',
+        self.CreateItem = channel.unary_unary(
+                '/project3.ServiceNodeService/CreateItem',
                 request_serializer=project3__pb2.CreateItemRequest.SerializeToString,
                 response_deserializer=project3__pb2.CreateItemResponse.FromString,
                 _registered_method=True)
-        self.S_GetItem = channel.unary_unary(
-                '/project3.ServiceNodeService/S_GetItem',
+        self.GetItem = channel.unary_unary(
+                '/project3.ServiceNodeService/GetItem',
                 request_serializer=project3__pb2.GetItemRequest.SerializeToString,
                 response_deserializer=project3__pb2.GetItemResponse.FromString,
                 _registered_method=True)
-        self.S_SearchItems = channel.unary_unary(
-                '/project3.ServiceNodeService/S_SearchItems',
+        self.SearchItems = channel.unary_unary(
+                '/project3.ServiceNodeService/SearchItems',
                 request_serializer=project3__pb2.SearchItemsRequest.SerializeToString,
                 response_deserializer=project3__pb2.SearchItemsResponse.FromString,
                 _registered_method=True)
-        self.S_UpdateItem = channel.unary_unary(
-                '/project3.ServiceNodeService/S_UpdateItem',
+        self.UpdateItem = channel.unary_unary(
+                '/project3.ServiceNodeService/UpdateItem',
                 request_serializer=project3__pb2.UpdateItemRequest.SerializeToString,
                 response_deserializer=project3__pb2.UpdateItemResponse.FromString,
                 _registered_method=True)
-        self.S_JoinAuction = channel.unary_stream(
-                '/project3.ServiceNodeService/S_JoinAuction',
-                request_serializer=project3__pb2.JoinAuctionRequest.SerializeToString,
-                response_deserializer=project3__pb2.AuctionUpdate.FromString,
-                _registered_method=True)
-        self.S_PlaceBid = channel.unary_unary(
-                '/project3.ServiceNodeService/S_PlaceBid',
+        self.PlaceBid = channel.unary_unary(
+                '/project3.ServiceNodeService/PlaceBid',
                 request_serializer=project3__pb2.PlaceBidRequest.SerializeToString,
                 response_deserializer=project3__pb2.PlaceBidResponse.FromString,
+                _registered_method=True)
+        self.JoinAuction = channel.unary_stream(
+                '/project3.ServiceNodeService/JoinAuction',
+                request_serializer=project3__pb2.JoinAuctionRequest.SerializeToString,
+                response_deserializer=project3__pb2.AuctionUpdate.FromString,
                 _registered_method=True)
 
 
 class ServiceNodeServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def S_CreateItem(self, request, context):
+    def CreateItem(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def S_GetItem(self, request, context):
+    def GetItem(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def S_SearchItems(self, request, context):
+    def SearchItems(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def S_UpdateItem(self, request, context):
+    def UpdateItem(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def S_JoinAuction(self, request, context):
+    def PlaceBid(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def S_PlaceBid(self, request, context):
+    def JoinAuction(self, request, context):
         """TODO: populate
         rpc S_HeartbeatRequest(google.protobuf.Empty) returns (Heartbeat);
         rpc S_Shutdown(google.protobuf.Empty) returns (google.protobuf.Empty); // for later: called by controller to shut down idle node
@@ -732,35 +272,35 @@ class ServiceNodeServiceServicer(object):
 
 def add_ServiceNodeServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'S_CreateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.S_CreateItem,
+            'CreateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateItem,
                     request_deserializer=project3__pb2.CreateItemRequest.FromString,
                     response_serializer=project3__pb2.CreateItemResponse.SerializeToString,
             ),
-            'S_GetItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.S_GetItem,
+            'GetItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetItem,
                     request_deserializer=project3__pb2.GetItemRequest.FromString,
                     response_serializer=project3__pb2.GetItemResponse.SerializeToString,
             ),
-            'S_SearchItems': grpc.unary_unary_rpc_method_handler(
-                    servicer.S_SearchItems,
+            'SearchItems': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchItems,
                     request_deserializer=project3__pb2.SearchItemsRequest.FromString,
                     response_serializer=project3__pb2.SearchItemsResponse.SerializeToString,
             ),
-            'S_UpdateItem': grpc.unary_unary_rpc_method_handler(
-                    servicer.S_UpdateItem,
+            'UpdateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateItem,
                     request_deserializer=project3__pb2.UpdateItemRequest.FromString,
                     response_serializer=project3__pb2.UpdateItemResponse.SerializeToString,
             ),
-            'S_JoinAuction': grpc.unary_stream_rpc_method_handler(
-                    servicer.S_JoinAuction,
-                    request_deserializer=project3__pb2.JoinAuctionRequest.FromString,
-                    response_serializer=project3__pb2.AuctionUpdate.SerializeToString,
-            ),
-            'S_PlaceBid': grpc.unary_unary_rpc_method_handler(
-                    servicer.S_PlaceBid,
+            'PlaceBid': grpc.unary_unary_rpc_method_handler(
+                    servicer.PlaceBid,
                     request_deserializer=project3__pb2.PlaceBidRequest.FromString,
                     response_serializer=project3__pb2.PlaceBidResponse.SerializeToString,
+            ),
+            'JoinAuction': grpc.unary_stream_rpc_method_handler(
+                    servicer.JoinAuction,
+                    request_deserializer=project3__pb2.JoinAuctionRequest.FromString,
+                    response_serializer=project3__pb2.AuctionUpdate.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -774,7 +314,7 @@ class ServiceNodeService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def S_CreateItem(request,
+    def CreateItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -787,7 +327,7 @@ class ServiceNodeService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ServiceNodeService/S_CreateItem',
+            '/project3.ServiceNodeService/CreateItem',
             project3__pb2.CreateItemRequest.SerializeToString,
             project3__pb2.CreateItemResponse.FromString,
             options,
@@ -801,7 +341,7 @@ class ServiceNodeService(object):
             _registered_method=True)
 
     @staticmethod
-    def S_GetItem(request,
+    def GetItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -814,7 +354,7 @@ class ServiceNodeService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ServiceNodeService/S_GetItem',
+            '/project3.ServiceNodeService/GetItem',
             project3__pb2.GetItemRequest.SerializeToString,
             project3__pb2.GetItemResponse.FromString,
             options,
@@ -828,7 +368,7 @@ class ServiceNodeService(object):
             _registered_method=True)
 
     @staticmethod
-    def S_SearchItems(request,
+    def SearchItems(request,
             target,
             options=(),
             channel_credentials=None,
@@ -841,7 +381,7 @@ class ServiceNodeService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ServiceNodeService/S_SearchItems',
+            '/project3.ServiceNodeService/SearchItems',
             project3__pb2.SearchItemsRequest.SerializeToString,
             project3__pb2.SearchItemsResponse.FromString,
             options,
@@ -855,7 +395,7 @@ class ServiceNodeService(object):
             _registered_method=True)
 
     @staticmethod
-    def S_UpdateItem(request,
+    def UpdateItem(request,
             target,
             options=(),
             channel_credentials=None,
@@ -868,7 +408,7 @@ class ServiceNodeService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ServiceNodeService/S_UpdateItem',
+            '/project3.ServiceNodeService/UpdateItem',
             project3__pb2.UpdateItemRequest.SerializeToString,
             project3__pb2.UpdateItemResponse.FromString,
             options,
@@ -882,34 +422,7 @@ class ServiceNodeService(object):
             _registered_method=True)
 
     @staticmethod
-    def S_JoinAuction(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(
-            request,
-            target,
-            '/project3.ServiceNodeService/S_JoinAuction',
-            project3__pb2.JoinAuctionRequest.SerializeToString,
-            project3__pb2.AuctionUpdate.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def S_PlaceBid(request,
+    def PlaceBid(request,
             target,
             options=(),
             channel_credentials=None,
@@ -922,9 +435,36 @@ class ServiceNodeService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/project3.ServiceNodeService/S_PlaceBid',
+            '/project3.ServiceNodeService/PlaceBid',
             project3__pb2.PlaceBidRequest.SerializeToString,
             project3__pb2.PlaceBidResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def JoinAuction(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/project3.ServiceNodeService/JoinAuction',
+            project3__pb2.JoinAuctionRequest.SerializeToString,
+            project3__pb2.AuctionUpdate.FromString,
             options,
             channel_credentials,
             insecure,
