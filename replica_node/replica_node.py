@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from concurrent import futures
 
@@ -10,25 +12,75 @@ import utils.config as config
 import utils.network_conventions as net_con
 
 class ReplicaNodeServicer(p3_grpc.ReplicaNodeServiceServicer):
-    # def Put(self, request, context):
-    #     DATA[request.key] = request.value
-    #     print(f"{CONTAINER_NAME} PUT {request.key}={request.value}", flush=True)
-    #     return project3_pb2.PutResponse(ok=True, pod=CONTAINER_NAME)
+    def __init__(self, replica_node: ReplicaNode):
+        assert replica_node is not None
+        self.replica_node : ReplicaNode = replica_node
 
-    # def Get(self, request, context):
-    #     value = DATA.get(request.key, "")
-    #     found = request.key in DATA
-    #     print(f"{CONTAINER_NAME} GET {request.key} found={found}", flush=True)
-    #     return project3_pb2.GetResponse(found=found, value=value, pod=CONTAINER_NAME)
-    ...
+    def R_Put(self, request: p3.CreateItemRequest, context):
+        log.warn(f"ReplicaNodeServicer@{CONTAINER_NAME} PUT {request.item} (but not implmented)", flush=True)
+        return p3.PutResponse(ok=False, pod=CONTAINER_NAME)
+        # DATA[request.key] = request.value
+        # print(f"{CONTAINER_NAME} PUT {request.key}={request.value}", flush=True)
+        # return p3.PutResponse(ok=True, pod=CONTAINER_NAME)
+
+    def R_Get(self, request: p3.GetItemRequest, context):
+        log.warn(f"ReplicaNodeServicer@{CONTAINER_NAME} GET {request.item_id} (but not implmented)", flush=True)
+        return p3.GetResponse(ok=False, pod=CONTAINER_NAME)
+        # value = DATA.get(request.key, "")
+        # found = request.key in DATA
+        # print(f"{CONTAINER_NAME} GET {request.key} found={found}", flush=True)
+        # return p3.GetResponse(found=found, value=value, pod=CONTAINER_NAME)
+
+    def R_Update(self, request: p3.UpdateItemRequest, context):
+        log.warn(f"ReplicaNodeServicer@{CONTAINER_NAME} UPDATE {request.item_id}: {request.prev_version}->{request.new_value} (but not implmented)", flush=True)
+        return p3.GetResponse(ok=False, pod=CONTAINER_NAME)
+        # value = DATA.get(request.key, "")
+        # found = request.key in DATA
+        # print(f"{CONTAINER_NAME} GET {request.key} found={found}", flush=True)
+        # return p3.GetResponse(found=found, value=value, pod=CONTAINER_NAME)
 
 class StorageServicer(p3_grpc.StorageServiceServicer):
-    ...
+    def __init__(self, replica_node: ReplicaNode):
+        assert replica_node is not None
+        self.replica_node : ReplicaNode = replica_node
 
-class Storage:
+    def Put(self, request, context):
+        log.warn(f"StorageServicer@{CONTAINER_NAME} PUT {request.item} (but not implmented)", flush=True)
+        return p3.PutResponse(ok=False, pod=CONTAINER_NAME)
+        # DATA[request.key] = request.value
+        # print(f"{CONTAINER_NAME} PUT {request.key}={request.value}", flush=True)
+        # return p3.PutResponse(ok=True, pod=CONTAINER_NAME)
+
+    def Get(self, request, context):
+        log.warn(f"ReplicaNodeServicer@{CONTAINER_NAME} GET {request.item_id} (but not implmented)", flush=True)
+        return p3.GetResponse(ok=False, pod=CONTAINER_NAME)
+        # value = DATA.get(request.key, "")
+        # found = request.key in DATA
+        # print(f"{CONTAINER_NAME} GET {request.key} found={found}", flush=True)
+        # return p3.GetResponse(found=found, value=value, pod=CONTAINER_NAME)
+
+    def Update(self, request, context):
+        log.warn(f"ReplicaNodeServicer@{CONTAINER_NAME} UPDATE {request.item_id}: {request.prev_version}->{request.new_value} (but not implmented)", flush=True)
+        return p3.GetResponse(ok=False, pod=CONTAINER_NAME)
+        # value = DATA.get(request.key, "")
+        # found = request.key in DATA
+        # print(f"{CONTAINER_NAME} GET {request.key} found={found}", flush=True)
+        # return p3.GetResponse(found=found, value=value, pod=CONTAINER_NAME)
+
+    # def HeartbeatRequest(self, request, context):
+    #     ...
+    #     # value = DATA.get(request.key, "")
+    #     # found = request.key in DATA
+    #     # print(f"{CONTAINER_NAME} GET {request.key} found={found}", flush=True)
+    #     # return p3.GetResponse(found=found, value=value, pod=CONTAINER_NAME)
+    
+
+class ReplicaNode:
+    """ holds all the core data/logic. the two other classes are just thing layers for handling RPCs """
     def __init__(self):
-        self.replica_node_servicer = ReplicaNodeServicer()
-        self.storage_servicer = StorageServicer()
+        self.replica_node_servicer = ReplicaNodeServicer(replica_node=self)
+        self.storage_servicer = StorageServicer(replica_node=self)
+        self.data = {}
 
 def serve():
     global HOSTNAME
@@ -39,13 +91,12 @@ def serve():
     HOSTNAME = os.environ.get("HOSTNAME", "replica-node")
     CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "p3-replica-node")
     PORT = os.environ.get("PORT", str(net_con.REPLICA_NODE_BASE_PORT))
-    DATA = {}
-    storage = Storage()
+    replica = ReplicaNode()
 
     print("dummy replica node")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    p3_grpc.add_ReplicaNodeServiceServicer_to_server(storage.replica_node_servicer, server)
-    p3_grpc.add_StorageServiceServicer_to_server(storage.storage_servicer, server)
+    p3_grpc.add_ReplicaNodeServiceServicer_to_server(replica.replica_node_servicer, server)
+    p3_grpc.add_StorageServiceServicer_to_server(replica.storage_servicer, server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
     log.info(f"storage '{CONTAINER_NAME}' listening on {PORT}", flush=True)
